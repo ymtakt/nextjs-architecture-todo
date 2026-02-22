@@ -12,6 +12,7 @@ Next.js のアーキテクチャを学習・整理するためのシンプルな
 - **Validation**: Zod
 - **Error Handling**: neverthrow
 - **Pattern Matching**: ts-pattern
+- **Logging**: pino
 - **Linting**: ESLint
 
 ## セットアップ
