@@ -57,9 +57,18 @@ npm run dev
 ## ディレクトリ構成
 
 ```
-src/
-  app/           # App Router のページとレイアウト
-  lib/           # ユーティリティ（Prisma クライアント等）
-prisma/
-  schema.prisma  # データベーススキーマ
+.
+├── prisma/
+│   └── schema.prisma       # データベーススキーマ
+├── src/
+│   ├── app/                # App Router
+│   │   ├── layout.tsx      # ルートレイアウト
+│   │   └── page.tsx        # ホームページ
+│   ├── lib/                # ユーティリティ
+│   │   ├── logger.ts       # pino ロガー
+│   │   └── prisma.ts       # Prisma クライアント
+│   └── generated/          # 自動生成（Prisma Client）
+├── docker-compose.yml      # PostgreSQL コンテナ
+├── prisma.config.ts        # Prisma 設定
+└── next.config.ts          # Next.js 設定
 ```
