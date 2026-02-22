@@ -10,6 +10,8 @@ Next.js のアーキテクチャを学習・整理するためのシンプルな
 - **Database**: PostgreSQL
 - **ORM**: Prisma
 - **Validation**: Zod
+- **Error Handling**: neverthrow
+- **Pattern Matching**: ts-pattern
 - **Linting**: ESLint
 
 ## セットアップ
