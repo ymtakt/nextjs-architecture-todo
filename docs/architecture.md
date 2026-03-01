@@ -118,17 +118,18 @@ src/
 │           ├── client/        # クライアントコンポーネント
 │           │   ├── {component}/           # ケバブケース
 │           │   │   ├── {Component}.tsx    # アッパーキャメル
-│           │   │   └── action/            # Server Actions
+│           │   │   └── action/
+│           │   │       ├── {action}.ts    # Server Action
+│           │   │       └── schema.ts      # 入力バリデーションスキーマ
 │           │   └── type.ts                # 共通型定義
 │           ├── server/        # サーバーコンポーネント（テンプレート）
 │           │   └── {page-template}/       # ケバブケース
 │           └── hook/          # ドメイン固有フック
 │
 ├── model/
-│   ├── data/                  # 型定義・スキーマ
+│   ├── data/                  # 型定義
 │   │   └── {domain}/
-│   │       ├── schema.ts      # Zod スキーマ
-│   │       └── type.ts        # TypeScript 型定義
+│   │       └── type.ts        # ドメインモデル型定義
 │   ├── repository/            # データアクセス層
 │   │   └── {domain}/
 │   │       └── {domain}Repository.ts  # ローワーキャメル
@@ -197,20 +198,24 @@ export async function TodoPageTemplate() {
 
 ### 3. model/data（データ定義層）
 
-**責務**: 型定義とバリデーションスキーマ。
+**責務**: ドメインモデルの型定義。
 
-- Zod スキーマでバリデーションルールを定義する。
-- スキーマから TypeScript 型を導出する。
+- エンティティ型と入力型を定義する。
+- バリデーションスキーマは action/ に配置（コロケーション）。
 
 ```typescript
-// model/data/todo/schema.ts
-export const todoSchema = z.object({
-  id: z.string().cuid(),
-  title: z.string().min(1).max(100),
-  completed: z.boolean(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
+// model/data/todo/type.ts
+export type Todo = {
+  id: string;
+  title: string;
+  completed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type CreateTodoInput = {
+  title: string;
+};
 ```
 
 ### 4. model/repository（リポジトリ層）
@@ -307,34 +312,36 @@ neverthrow の Result 型を使用し、例外を投げずにエラーを値と�
 
 ```typescript
 // Repository → Service のエラー変換
-const mapRepositoryError = (error: TodoRepositoryError): TodoServiceError => {
+function mapRepositoryError(error: RepositoryError): ServiceError {
   return match(error.type)
     .with("NOT_FOUND", () => ({ type: "NOT_FOUND", message: error.message }))
     .with("DATABASE_ERROR", () => ({ type: "INTERNAL_ERROR", message: "データベースエラーが発生した." }))
     .exhaustive();
-};
+}
 ```
 
 ## Server Actions の配置
 
 Server Actions は対応するクライアントコンポーネントと同じディレクトリの `action/` に配置する。
-これにより、コンポーネントとアクションの関連性が明確になる。
+入力バリデーションスキーマも `action/` に配置する（コロケーション）。
 
 ```
 component/domain/todo/client/
 ├── todo-create-form/
 │   ├── TodoCreateForm.tsx
 │   └── action/
-│       └── createTodoAction.ts
+│       ├── createTodoAction.ts
+│       └── schema.ts          # 入力バリデーション
 ├── todo-edit/
 │   ├── TodoEdit.tsx
 │   └── action/
-│       └── updateTodoAction.ts
+│       ├── updateTodoAction.ts
+│       └── schema.ts          # 入力バリデーション
 └── todo-item/
     ├── TodoItem.tsx
     └── action/
-        ├── toggleTodoAction.ts
-        └── deleteTodoAction.ts
+        ├── toggleTodoAction.ts  # スキーマ不要（id のみ）
+        └── deleteTodoAction.ts  # スキーマ不要（id のみ）
 ```
 
 ## インポート方針

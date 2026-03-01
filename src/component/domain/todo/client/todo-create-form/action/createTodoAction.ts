@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createTodoInputSchema } from "@/model/data/todo/schema";
+import { createTodoInputSchema } from "./schema";
 import { createNewTodo } from "@/model/logic/todo/todoLogic";
 
 import type { ActionState } from "../../type";

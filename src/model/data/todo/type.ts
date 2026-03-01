@@ -1,22 +1,19 @@
-import type { z } from "zod";
+/** Todo エンティティの型. */
+export type Todo = {
+  id: string;
+  title: string;
+  completed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
-import type {
-  createTodoInputSchema,
-  todoSchema,
-  updateTodoInputSchema,
-} from "./schema";
+/** Todo 作成時の入力型. */
+export type CreateTodoInput = {
+  title: string;
+};
 
-/**
- * Todo エンティティの型.
- */
-export type Todo = z.infer<typeof todoSchema>;
-
-/**
- * Todo 作成時の入力型.
- */
-export type CreateTodoInput = z.infer<typeof createTodoInputSchema>;
-
-/**
- * Todo 更新時の入力型.
- */
-export type UpdateTodoInput = z.infer<typeof updateTodoInputSchema>;
+/** Todo 更新時の入力型. */
+export type UpdateTodoInput = {
+  title?: string;
+  completed?: boolean;
+};
