@@ -1,8 +1,7 @@
 "use client";
 
-import { signOut } from "firebase/auth";
 import { signOutAction } from "@/component/domain/auth/client/sign-out-button/action/signOutAction";
-import { firebaseAuth } from "@/external/firebase/client";
+import { signOutFromFirebase } from "@/external/firebase/auth";
 
 /**
  * サインアウトボタンコンポーネント.
@@ -10,7 +9,7 @@ import { firebaseAuth } from "@/external/firebase/client";
 export function SignOutButton() {
   const handleSignOut = async () => {
     // Firebase からサインアウト
-    await signOut(firebaseAuth);
+    await signOutFromFirebase();
     // Server Action でセッション削除
     await signOutAction();
   };

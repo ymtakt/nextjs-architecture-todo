@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -13,7 +12,7 @@ import { signUpAction } from "@/component/domain/auth/client/sign-up-form/action
 import { FormMessage } from "@/component/shared/client/form-message/FormMessage";
 import { SubmitButton } from "@/component/shared/client/submit-button/SubmitButton";
 import { TextInput } from "@/component/shared/client/text-input/TextInput";
-import { firebaseAuth } from "@/external/firebase/client";
+import { signUpWithEmail } from "@/external/firebase/auth";
 
 /**
  * サインアップフォームコンポーネント.
@@ -33,44 +32,28 @@ export function SignUpForm() {
   const onSubmit = async (data: SignUpFormInput) => {
     setError(null);
 
-    try {
-      // Firebase Auth でユーザー作成
-      const userCredential = await createUserWithEmailAndPassword(
-        firebaseAuth,
-        data.email,
-        data.password,
-      );
-
-      // ID トークン取得
-      const idToken = await userCredential.user.getIdToken();
-
-      // Server Action でセッション作成 + DB ユーザー作成
-      const result = await signUpAction({
-        idToken,
-        email: data.email,
-        firebaseUid: userCredential.user.uid,
-      });
-
-      if (!result.success) {
-        setError(result.message);
-        return;
-      }
-
-      // 成功時は Todo ページへ
-      router.push("/todo");
-      router.refresh();
-    } catch (e) {
-      if (e instanceof Error) {
-        // Firebase エラーメッセージを日本語化
-        if (e.message.includes("email-already-in-use")) {
-          setError("このメールアドレスは既に使用されています.");
-        } else {
-          setError(e.message);
-        }
-      } else {
-        setError("アカウント作成に失敗しました.");
-      }
+    // Firebase Auth でユーザー作成
+    const authResult = await signUpWithEmail(data.email, data.password);
+    if (authResult.isErr()) {
+      setError(authResult.error.message);
+      return;
     }
+
+    // Server Action でセッション作成 + DB ユーザー作成
+    const result = await signUpAction({
+      idToken: authResult.value.idToken,
+      email: data.email,
+      firebaseUid: authResult.value.uid,
+    });
+
+    if (!result.success) {
+      setError(result.message);
+      return;
+    }
+
+    // 成功時は Todo ページへ
+    router.push("/todo");
+    router.refresh();
   };
 
   return (
