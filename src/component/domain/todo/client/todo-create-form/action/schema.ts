@@ -7,3 +7,6 @@ export const createTodoInputSchema = z.object({
     .min(1, "タイトルは必須である.")
     .max(100, "タイトルは 100 文字以内である必要がある."),
 });
+
+/** Todo 作成時の入力型. */
+export type CreateTodoFormInput = z.infer<typeof createTodoInputSchema>;

@@ -2,37 +2,21 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createTodoInputSchema } from "./schema";
+import type { CreateTodoFormInput } from "./schema";
 import { createNewTodo } from "@/model/logic/todo/todoLogic";
 
-import type { ActionState } from "../../type";
+type ActionState = {
+  success: boolean;
+  message: string;
+};
 
 /**
  * 新しい Todo を作成する Server Action.
- * @param _prevState - 前回の状態.
- * @param formData - フォームデータ.
+ * @param data - バリデーション済みのフォームデータ.
  * @returns アクションの結果.
  */
-export async function createTodoAction(
-  _prevState: ActionState,
-  formData: FormData
-): Promise<ActionState> {
-  const rawData = {
-    title: formData.get("title"),
-  };
-
-  // バリデーション.
-  const parsed = createTodoInputSchema.safeParse(rawData);
-  if (!parsed.success) {
-    return {
-      success: false,
-      message: "バリデーションエラー.",
-      errors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
-    };
-  }
-
-  // サービス層でビジネスロジックを実行.
-  const result = await createNewTodo(parsed.data);
+export async function createTodoAction(data: CreateTodoFormInput): Promise<ActionState> {
+  const result = await createNewTodo(data);
 
   if (result.isErr()) {
     return {

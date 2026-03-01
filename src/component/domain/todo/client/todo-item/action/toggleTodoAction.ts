@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 
 import { toggleTodoComplete } from "@/model/logic/todo/todoLogic";
 
-import type { ActionState } from "../../type";
+type ActionState = {
+  success: boolean;
+  message: string;
+};
 
 /**
  * Todo の完了状態を切り替える Server Action.

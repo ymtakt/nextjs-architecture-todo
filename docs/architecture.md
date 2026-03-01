@@ -116,12 +116,11 @@ src/
 │   └── domain/                # ドメイン固有コンポーネント
 │       └── {domain}/
 │           ├── client/        # クライアントコンポーネント
-│           │   ├── {component}/           # ケバブケース
-│           │   │   ├── {Component}.tsx    # アッパーキャメル
-│           │   │   └── action/
-│           │   │       ├── {action}.ts    # Server Action
-│           │   │       └── schema.ts      # 入力バリデーションスキーマ
-│           │   └── type.ts                # 共通型定義
+│           │   └── {component}/           # ケバブケース
+│           │       ├── {Component}.tsx    # アッパーキャメル
+│           │       └── action/
+│           │           ├── {action}.ts    # Server Action
+│           │           └── schema.ts      # 入力バリデーション + 型定義
 │           ├── server/        # サーバーコンポーネント（テンプレート）
 │           │   └── {page-template}/       # ケバブケース
 │           └── hook/          # ドメイン固有フック
@@ -193,7 +192,7 @@ export async function TodoPageTemplate() {
 #### client/
 
 - クライアントコンポーネント（`"use client"`）を配置する。
-- `useActionState` などの React hooks を使用する。
+- React Hook Form + Zod でフォーム管理・バリデーションを行う。
 - Server Actions を `action/` ディレクトリに分割配置する。
 
 ### 3. model/data（データ定義層）
@@ -384,8 +383,10 @@ export async function getTodoWithUser(id: string): Promise<ServiceResult<Todo>> 
 ```
 [Browser]
     ↓ フォーム送信
+[React Hook Form] ← クライアントバリデーション (Zod)
+    ↓ バリデーション成功
 [component/domain/client/action] ← Server Action
-    ↓ バリデーション (Zod)
+    ↓
 [model/logic] ← ビジネスロジック
     ↓ repository 呼び出し
 [model/repository] ← データアクセス
@@ -439,17 +440,147 @@ component/domain/todo/client/
 │   ├── TodoCreateForm.tsx
 │   └── action/
 │       ├── createTodoAction.ts
-│       └── schema.ts          # 入力バリデーション
+│       └── schema.ts          # 入力バリデーション + 型定義
 ├── todo-edit/
 │   ├── TodoEdit.tsx
 │   └── action/
 │       ├── updateTodoAction.ts
-│       └── schema.ts          # 入力バリデーション
+│       └── schema.ts          # 入力バリデーション + 型定義
 └── todo-item/
     ├── TodoItem.tsx
     └── action/
         ├── toggleTodoAction.ts  # スキーマ不要（id のみ）
         └── deleteTodoAction.ts  # スキーマ不要（id のみ）
+```
+
+## フォーム管理
+
+React Hook Form + Zod を使用してフォームの状態管理とバリデーションを行う。
+
+### 基本構成
+
+```typescript
+// action/schema.ts
+import { z } from "zod";
+
+export const createTodoInputSchema = z.object({
+  title: z.string().min(1, "タイトルは必須である."),
+});
+
+export type CreateTodoFormInput = z.infer<typeof createTodoInputSchema>;
+```
+
+```typescript
+// action/createTodoAction.ts
+"use server";
+
+export async function createTodoAction(data: CreateTodoFormInput): Promise<ActionState> {
+  // バリデーション済みのデータを受け取る
+  const result = await createNewTodo(data);
+  // ...
+}
+```
+
+```tsx
+// TodoCreateForm.tsx
+"use client";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+export function TodoCreateForm() {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<CreateTodoFormInput>({
+    resolver: zodResolver(createTodoInputSchema),
+  });
+
+  const onSubmit = async (data: CreateTodoFormInput) => {
+    const result = await createTodoAction(data);
+    if (result.success) reset();
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register("title")} />
+      {errors.title && <span>{errors.title.message}</span>}
+      <button disabled={isSubmitting}>追加</button>
+    </form>
+  );
+}
+```
+
+### React Hook Form を使用する理由
+
+- **クライアントバリデーション**: 送信前にエラーを表示できる
+- **再レンダリング最適化**: フィールドごとの更新で全体の再描画を防ぐ
+- **外部コンポーネント連携**: Controller で DatePicker 等と簡単に連携
+- **フォーム状態管理**: isSubmitting, isDirty, isValid 等を自動管理
+
+### カスタムフックの分離基準
+
+フォームの複雑さに応じて、ロジックをカスタムフックに分離する。
+
+**シンプルなフォーム（フック分離不要）**
+
+```
+todo-create-form/
+├── TodoCreateForm.tsx      # useForm をコンポーネント内で直接使用
+└── action/
+    ├── createTodoAction.ts
+    └── schema.ts
+```
+
+**複雑なフォーム（フック分離推奨）**
+
+```
+meeting-create-form/
+├── MeetingCreateForm.tsx   # UI のみ
+├── action/
+│   ├── createMeetingAction.ts
+│   └── schema.ts
+└── hook/
+    └── useMeetingForm.ts   # フォームロジックを分離
+```
+
+**フックを分離する基準:**
+
+| 条件 | 例 |
+|-----|-----|
+| フィールドが多い（5個以上） | 会員登録、会議作成 |
+| 条件分岐ロジックがある | watch で表示切替、依存フィールド |
+| 複数コンポーネントで共有 | 作成と編集で同じロジック |
+| 複雑なバリデーション | 非同期バリデーション、相関チェック |
+
+**分離したフックの例:**
+
+```typescript
+// hook/useMeetingForm.ts
+export function useMeetingForm(defaultValues?: MeetingFormInput) {
+  const form = useForm<MeetingFormInput>({
+    resolver: zodResolver(meetingSchema),
+    defaultValues,
+  });
+
+  const isRecurring = form.watch("isRecurring");
+  const showEndDate = isRecurring && form.watch("frequency") !== "none";
+
+  const onSubmit = async (data: MeetingFormInput) => {
+    const result = await createMeetingAction(data);
+    if (result.success) form.reset();
+    return result;
+  };
+
+  return {
+    form,
+    isRecurring,
+    showEndDate,
+    onSubmit: form.handleSubmit(onSubmit),
+  };
+}
 ```
 
 ## インポート方針

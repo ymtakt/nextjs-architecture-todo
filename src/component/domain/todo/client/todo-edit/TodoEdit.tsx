@@ -1,38 +1,53 @@
 "use client";
 
-import { useActionState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { Todo } from "@/model/data/todo/type";
 
+import {
+  updateTodoInputSchema,
+  type UpdateTodoFormInput,
+} from "@/component/domain/todo/client/todo-edit/action/schema";
 import { updateTodoAction } from "@/component/domain/todo/client/todo-edit/action/updateTodoAction";
-import type { ActionState } from "@/component/domain/todo/client/type";
 
 /**
  * TodoEdit コンポーネントの Props.
  */
-type TodoEditProps = {
+type Props = {
   todo: Todo;
 };
 
 /**
- * 初期状態.
- */
-const initialState: ActionState = {
-  success: false,
-  message: "",
-};
-
-/**
  * Todo の編集フォームを表示するクライアントコンポーネント.
- * useActionState を使用して Server Action と連携する.
+ * React Hook Form を使用してバリデーションと送信を管理する.
  */
-export function TodoEdit({ todo }: TodoEditProps) {
-  // Server Action を ID でバインド.
-  const boundAction = updateTodoAction.bind(null, todo.id);
-  const [state, formAction, isPending] = useActionState(boundAction, initialState);
+export function TodoEdit({ todo }: Props) {
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<UpdateTodoFormInput>({
+    resolver: zodResolver(updateTodoInputSchema),
+    defaultValues: {
+      title: todo.title,
+      completed: todo.completed,
+    },
+  });
+
+  const onSubmit = async (data: UpdateTodoFormInput) => {
+    const result = await updateTodoAction(todo.id, data);
+    setMessage({
+      type: result.success ? "success" : "error",
+      text: result.message,
+    });
+  };
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-gray-700">
           タイトル
@@ -40,13 +55,12 @@ export function TodoEdit({ todo }: TodoEditProps) {
         <input
           type="text"
           id="title"
-          name="title"
-          defaultValue={todo.title}
-          disabled={isPending}
+          disabled={isSubmitting}
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
+          {...register("title")}
         />
-        {state.errors?.title && (
-          <p className="mt-1 text-sm text-red-600">{state.errors.title[0]}</p>
+        {errors.title && (
+          <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
         )}
       </div>
 
@@ -54,31 +68,27 @@ export function TodoEdit({ todo }: TodoEditProps) {
         <input
           type="checkbox"
           id="completed"
-          name="completed"
-          value="true"
-          defaultChecked={todo.completed}
-          disabled={isPending}
+          disabled={isSubmitting}
           className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          {...register("completed")}
         />
         <label htmlFor="completed" className="ml-2 block text-sm text-gray-700">
           完了
         </label>
       </div>
 
-      {state.message && !state.success && (
-        <p className="text-sm text-red-600">{state.message}</p>
-      )}
-
-      {state.message && state.success && (
-        <p className="text-sm text-green-600">{state.message}</p>
+      {message && (
+        <p className={`text-sm ${message.type === "success" ? "text-green-600" : "text-red-600"}`}>
+          {message.text}
+        </p>
       )}
 
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isSubmitting}
         className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400"
       >
-        {isPending ? "更新中..." : "更新"}
+        {isSubmitting ? "更新中..." : "更新"}
       </button>
     </form>
   );

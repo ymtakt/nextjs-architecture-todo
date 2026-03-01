@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 
 import { deleteTodoById } from "@/model/logic/todo/todoLogic";
 
-import type { ActionState } from "../../type";
+type ActionState = {
+  success: boolean;
+  message: string;
+};
 
 /**
  * Todo を削除する Server Action.
