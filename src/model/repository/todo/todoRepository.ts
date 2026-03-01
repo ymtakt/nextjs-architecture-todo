@@ -14,11 +14,12 @@ export type RepositoryError = {
 type RepositoryResult<T> = Result<T, RepositoryError>;
 
 /**
- * すべての Todo を取得する.
+ * 指定ユーザーのすべての Todo を取得する.
  */
-export async function findAllTodos(): Promise<RepositoryResult<Todo[]>> {
+export async function findAllTodos(userId: string): Promise<RepositoryResult<Todo[]>> {
   try {
     const todos = await prisma.todo.findMany({
+      where: { userId },
       orderBy: { createdAt: "desc" },
     });
     return ok(todos);
@@ -28,12 +29,16 @@ export async function findAllTodos(): Promise<RepositoryResult<Todo[]>> {
 }
 
 /**
- * 指定された ID の Todo を取得する.
+ * 指定された ID の Todo を取得する（ユーザー確認付き）.
  */
-export async function findTodoById(id: string): Promise<RepositoryResult<Todo>> {
+export async function findTodoById(id: string, userId: string): Promise<RepositoryResult<Todo>> {
   try {
     const todo = await prisma.todo.findUnique({ where: { id } });
     if (!todo) {
+      return err({ type: "NOT_FOUND", message: `Todo with id ${id} not found` });
+    }
+    // 他ユーザーの Todo にはアクセス不可
+    if (todo.userId !== userId) {
       return err({ type: "NOT_FOUND", message: `Todo with id ${id} not found` });
     }
     return ok(todo);
@@ -45,12 +50,13 @@ export async function findTodoById(id: string): Promise<RepositoryResult<Todo>> 
 /**
  * 新しい Todo を作成する.
  */
-export async function createTodo(input: CreateTodoInput): Promise<RepositoryResult<Todo>> {
+export async function createTodo(input: CreateTodoInput, userId: string): Promise<RepositoryResult<Todo>> {
   try {
     const todo = await prisma.todo.create({
       data: {
         title: input.title,
         completed: false,
+        userId,
       },
     });
     return ok(todo);
@@ -60,13 +66,20 @@ export async function createTodo(input: CreateTodoInput): Promise<RepositoryResu
 }
 
 /**
- * 指定された ID の Todo を更新する.
+ * 指定された ID の Todo を更新する（ユーザー確認付き）.
  */
 export async function updateTodo(
   id: string,
-  input: UpdateTodoInput
+  input: UpdateTodoInput,
+  userId: string
 ): Promise<RepositoryResult<Todo>> {
   try {
+    // まず所有権を確認
+    const existing = await prisma.todo.findUnique({ where: { id } });
+    if (!existing || existing.userId !== userId) {
+      return err({ type: "NOT_FOUND", message: `Todo with id ${id} not found` });
+    }
+
     const todo = await prisma.todo.update({
       where: { id },
       data: input,
@@ -78,10 +91,16 @@ export async function updateTodo(
 }
 
 /**
- * 指定された ID の Todo を削除する.
+ * 指定された ID の Todo を削除する（ユーザー確認付き）.
  */
-export async function deleteTodo(id: string): Promise<RepositoryResult<Todo>> {
+export async function deleteTodo(id: string, userId: string): Promise<RepositoryResult<Todo>> {
   try {
+    // まず所有権を確認
+    const existing = await prisma.todo.findUnique({ where: { id } });
+    if (!existing || existing.userId !== userId) {
+      return err({ type: "NOT_FOUND", message: `Todo with id ${id} not found` });
+    }
+
     const todo = await prisma.todo.delete({ where: { id } });
     return ok(todo);
   } catch (e) {

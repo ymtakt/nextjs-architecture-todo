@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAuth } from "@/model/logic/auth/authLogic";
 import { deleteTodoById } from "@/model/logic/todo/todoLogic";
 
 type ActionState = {
@@ -15,7 +16,10 @@ type ActionState = {
  * @returns アクションの結果.
  */
 export async function deleteTodoAction(id: string): Promise<ActionState> {
-  const result = await deleteTodoById(id);
+  // 認証チェック
+  const user = await requireAuth();
+
+  const result = await deleteTodoById(id, user.id);
 
   if (result.isErr()) {
     return {

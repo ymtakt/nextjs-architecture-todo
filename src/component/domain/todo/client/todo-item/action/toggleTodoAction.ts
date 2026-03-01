@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAuth } from "@/model/logic/auth/authLogic";
 import { toggleTodoComplete } from "@/model/logic/todo/todoLogic";
 
 type ActionState = {
@@ -15,7 +16,10 @@ type ActionState = {
  * @returns アクションの結果.
  */
 export async function toggleTodoAction(id: string): Promise<ActionState> {
-  const result = await toggleTodoComplete(id);
+  // 認証チェック
+  const user = await requireAuth();
+
+  const result = await toggleTodoComplete(id, user.id);
 
   if (result.isErr()) {
     return {
@@ -25,7 +29,7 @@ export async function toggleTodoAction(id: string): Promise<ActionState> {
   }
 
   revalidatePath("/todo");
-  revalidatePath(`/${id}`);
+  revalidatePath(`/todo/${id}`);
   return {
     success: true,
     message: "Todo の状態を更新した.",

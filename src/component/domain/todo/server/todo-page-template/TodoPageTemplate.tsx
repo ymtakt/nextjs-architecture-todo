@@ -1,5 +1,7 @@
 import { TodoCreateForm } from "@/component/domain/todo/client/todo-create-form/TodoCreateForm";
 import { TodoItem } from "@/component/domain/todo/client/todo-item/TodoItem";
+import { SignOutButton } from "@/component/domain/auth/client/sign-out-button/SignOutButton";
+import { requireAuth } from "@/model/logic/auth/authLogic";
 import { getAllTodos } from "@/model/logic/todo/todoLogic";
 
 /**
@@ -7,7 +9,10 @@ import { getAllTodos } from "@/model/logic/todo/todoLogic";
  * サーバーコンポーネントとしてデータを取得し、クライアントコンポーネントに渡す.
  */
 export async function TodoPageTemplate() {
-  const result = await getAllTodos();
+  // 認証チェック（未認証なら /sign-in へリダイレクト）
+  const user = await requireAuth();
+
+  const result = await getAllTodos(user.id);
 
   // エラーの場合は例外をスロー（error.tsx でハンドリング）.
   if (result.isErr()) {
@@ -18,7 +23,14 @@ export async function TodoPageTemplate() {
 
   return (
     <div className="mx-auto max-w-2xl p-4">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Todo リスト</h1>
+      {/* ヘッダー */}
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Todo リスト</h1>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-600">{user.email}</span>
+          <SignOutButton />
+        </div>
+      </div>
 
       {/* Todo 作成フォーム. */}
       <div className="mb-6">

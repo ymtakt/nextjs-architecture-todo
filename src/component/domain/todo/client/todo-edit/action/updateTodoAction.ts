@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import type { UpdateTodoFormInput } from "./schema";
+import { requireAuth } from "@/model/logic/auth/authLogic";
 import { updateTodoById } from "@/model/logic/todo/todoLogic";
 
 type ActionState = {
@@ -20,7 +21,10 @@ export async function updateTodoAction(
   id: string,
   data: UpdateTodoFormInput
 ): Promise<ActionState> {
-  const result = await updateTodoById(id, data);
+  // 認証チェック
+  const user = await requireAuth();
+
+  const result = await updateTodoById(id, data, user.id);
 
   if (result.isErr()) {
     return {

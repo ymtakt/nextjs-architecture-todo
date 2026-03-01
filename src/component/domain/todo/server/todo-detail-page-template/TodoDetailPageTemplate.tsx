@@ -2,12 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { TodoEdit } from "@/component/domain/todo/client/todo-edit/TodoEdit";
+import { requireAuth } from "@/model/logic/auth/authLogic";
 import { getTodoById } from "@/model/logic/todo/todoLogic";
 
 /**
  * TodoDetailPageTemplate コンポーネントの Props.
  */
-type TodoDetailPageTemplateProps = {
+type Props = {
   id: string;
 };
 
@@ -15,8 +16,11 @@ type TodoDetailPageTemplateProps = {
  * Todo 詳細ページのテンプレートコンポーネント.
  * サーバーコンポーネントとして ID を受け取り、データを取得して編集フォームを表示する.
  */
-export async function TodoDetailPageTemplate({ id }: TodoDetailPageTemplateProps) {
-  const result = await getTodoById(id);
+export async function TodoDetailPageTemplate({ id }: Props) {
+  // 認証チェック（未認証なら /sign-in へリダイレクト）
+  const user = await requireAuth();
+
+  const result = await getTodoById(id, user.id);
 
   // NOT_FOUND エラーの場合は 404 ページを表示.
   if (result.isErr()) {

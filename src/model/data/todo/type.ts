@@ -5,6 +5,7 @@ export type Todo = {
   completed: boolean;
   createdAt: Date;
   updatedAt: Date;
+  userId: string;
 };
 
 /** Todo 作成時の入力型. */

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import type { CreateTodoFormInput } from "./schema";
+import { requireAuth } from "@/model/logic/auth/authLogic";
 import { createNewTodo } from "@/model/logic/todo/todoLogic";
 
 type ActionState = {
@@ -16,7 +17,10 @@ type ActionState = {
  * @returns アクションの結果.
  */
 export async function createTodoAction(data: CreateTodoFormInput): Promise<ActionState> {
-  const result = await createNewTodo(data);
+  // 認証チェック
+  const user = await requireAuth();
+
+  const result = await createNewTodo(data, user.id);
 
   if (result.isErr()) {
     return {

@@ -30,11 +30,11 @@ function toServiceError(e: RepositoryError): ServiceError {
 }
 
 /**
- * すべての Todo を取得する.
+ * 指定ユーザーのすべての Todo を取得する.
  */
-export async function getAllTodos(): Promise<ServiceResult<Todo[]>> {
-  logger.info("Fetching all todos");
-  const result = await findAllTodos();
+export async function getAllTodos(userId: string): Promise<ServiceResult<Todo[]>> {
+  logger.info({ userId }, "Fetching all todos");
+  const result = await findAllTodos(userId);
   if (result.isErr()) {
     return err(toServiceError(result.error));
   }
@@ -44,9 +44,9 @@ export async function getAllTodos(): Promise<ServiceResult<Todo[]>> {
 /**
  * 指定された ID の Todo を取得する.
  */
-export async function getTodoById(id: string): Promise<ServiceResult<Todo>> {
-  logger.info({ id }, "Fetching todo by id");
-  const result = await findTodoById(id);
+export async function getTodoById(id: string, userId: string): Promise<ServiceResult<Todo>> {
+  logger.info({ id, userId }, "Fetching todo by id");
+  const result = await findTodoById(id, userId);
   if (result.isErr()) {
     return err(toServiceError(result.error));
   }
@@ -56,9 +56,9 @@ export async function getTodoById(id: string): Promise<ServiceResult<Todo>> {
 /**
  * 新しい Todo を作成する.
  */
-export async function createNewTodo(input: CreateTodoInput): Promise<ServiceResult<Todo>> {
-  logger.info({ input }, "Creating new todo");
-  const result = await createTodo(input);
+export async function createNewTodo(input: CreateTodoInput, userId: string): Promise<ServiceResult<Todo>> {
+  logger.info({ input, userId }, "Creating new todo");
+  const result = await createTodo(input, userId);
   if (result.isErr()) {
     return err(toServiceError(result.error));
   }
@@ -70,10 +70,11 @@ export async function createNewTodo(input: CreateTodoInput): Promise<ServiceResu
  */
 export async function updateTodoById(
   id: string,
-  input: UpdateTodoInput
+  input: UpdateTodoInput,
+  userId: string
 ): Promise<ServiceResult<Todo>> {
-  logger.info({ id, input }, "Updating todo");
-  const result = await updateTodo(id, input);
+  logger.info({ id, input, userId }, "Updating todo");
+  const result = await updateTodo(id, input, userId);
   if (result.isErr()) {
     return err(toServiceError(result.error));
   }
@@ -83,9 +84,9 @@ export async function updateTodoById(
 /**
  * 指定された ID の Todo を削除する.
  */
-export async function deleteTodoById(id: string): Promise<ServiceResult<Todo>> {
-  logger.info({ id }, "Deleting todo");
-  const result = await deleteTodo(id);
+export async function deleteTodoById(id: string, userId: string): Promise<ServiceResult<Todo>> {
+  logger.info({ id, userId }, "Deleting todo");
+  const result = await deleteTodo(id, userId);
   if (result.isErr()) {
     return err(toServiceError(result.error));
   }
@@ -95,16 +96,16 @@ export async function deleteTodoById(id: string): Promise<ServiceResult<Todo>> {
 /**
  * Todo の完了状態を切り替える.
  */
-export async function toggleTodoComplete(id: string): Promise<ServiceResult<Todo>> {
-  logger.info({ id }, "Toggling todo completion");
+export async function toggleTodoComplete(id: string, userId: string): Promise<ServiceResult<Todo>> {
+  logger.info({ id, userId }, "Toggling todo completion");
 
-  const findResult = await findTodoById(id);
+  const findResult = await findTodoById(id, userId);
   if (findResult.isErr()) {
     return err(toServiceError(findResult.error));
   }
 
   const todo = findResult.value;
-  const updateResult = await updateTodo(id, { completed: !todo.completed });
+  const updateResult = await updateTodo(id, { completed: !todo.completed }, userId);
   if (updateResult.isErr()) {
     return err(toServiceError(updateResult.error));
   }
