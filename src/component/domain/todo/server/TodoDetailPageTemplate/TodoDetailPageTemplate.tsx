@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { TodoEdit } from "@/component/domain/todo/client/TodoEdit/TodoEdit";
-import { todoService } from "@/model/logic/todo/TodoLogic";
+import { getTodoById } from "@/model/logic/todo/TodoLogic";
 
 /**
  * TodoDetailPageTemplate コンポーネントの Props.
@@ -16,7 +16,7 @@ interface TodoDetailPageTemplateProps {
  * サーバーコンポーネントとして ID を受け取り、データを取得して編集フォームを表示する.
  */
 export async function TodoDetailPageTemplate({ id }: TodoDetailPageTemplateProps) {
-  const result = await todoService.getById(id);
+  const result = await getTodoById(id);
 
   // NOT_FOUND エラーの場合は 404 ページを表示.
   if (result.isErr()) {

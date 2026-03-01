@@ -1,13 +1,13 @@
 import { TodoCreateForm } from "@/component/domain/todo/client/TodoCreateForm/TodoCreateForm";
 import { TodoItem } from "@/component/domain/todo/client/TodoItem/TodoItem";
-import { todoService } from "@/model/logic/todo/TodoLogic";
+import { getAllTodos } from "@/model/logic/todo/TodoLogic";
 
 /**
  * Todo 一覧ページのテンプレートコンポーネント.
  * サーバーコンポーネントとしてデータを取得し、クライアントコンポーネントに渡す.
  */
 export async function TodoPageTemplate() {
-  const result = await todoService.getAll();
+  const result = await getAllTodos();
 
   // エラーの場合は例外をスロー（error.tsx でハンドリング）.
   if (result.isErr()) {

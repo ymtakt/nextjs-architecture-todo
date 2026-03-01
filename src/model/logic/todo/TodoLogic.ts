@@ -1,10 +1,16 @@
-import { ResultAsync } from "neverthrow";
+"use server";
+
+import { err, ok, type Result } from "neverthrow";
 import { match } from "ts-pattern";
 
 import { logger } from "@/external/logger";
 import type { CreateTodoInput, Todo, UpdateTodoInput } from "@/model/data/todo/type";
 import {
-  todoRepository,
+  createTodo,
+  deleteTodo,
+  findAllTodos,
+  findTodoById,
+  updateTodo,
   type TodoRepositoryError,
 } from "@/model/repository/todo/TodoRepository";
 
@@ -21,12 +27,12 @@ export interface TodoServiceError {
   message: string;
 }
 
+type ServiceResult<T> = Result<T, TodoServiceError>;
+
 /**
  * リポジトリエラーをサービスエラーに変換する.
- * @param error - リポジトリエラー.
- * @returns サービスエラー.
  */
-const mapRepositoryError = (error: TodoRepositoryError): TodoServiceError => {
+function mapRepositoryError(error: TodoRepositoryError): TodoServiceError {
   return match(error.type)
     .with("NOT_FOUND", () => ({
       type: "NOT_FOUND" as const,
@@ -37,77 +43,87 @@ const mapRepositoryError = (error: TodoRepositoryError): TodoServiceError => {
       message: "データベースエラーが発生した.",
     }))
     .exhaustive();
-};
+}
 
 /**
- * Todo に関するビジネスロジックを提供するサービス.
- * repository を使用してデータの永続化を行う.
+ * すべての Todo を取得する.
  */
-export const todoService = {
-  /**
-   * すべての Todo を取得する.
-   * @returns Todo の配列を含む ResultAsync.
-   */
-  getAll(): ResultAsync<Todo[], TodoServiceError> {
-    logger.info("Fetching all todos");
-    return todoRepository.findAll().mapErr(mapRepositoryError);
-  },
+export async function getAllTodos(): Promise<ServiceResult<Todo[]>> {
+  logger.info("Fetching all todos");
+  const result = await findAllTodos();
+  if (result.isErr()) {
+    return err(mapRepositoryError(result.error));
+  }
+  return ok(result.value);
+}
 
-  /**
-   * 指定された ID の Todo を取得する.
-   * @param id - 取得する Todo の ID.
-   * @returns Todo を含む ResultAsync.
-   */
-  getById(id: string): ResultAsync<Todo, TodoServiceError> {
-    logger.info({ id }, "Fetching todo by id");
-    return todoRepository.findById(id).mapErr(mapRepositoryError);
-  },
+/**
+ * 指定された ID の Todo を取得する.
+ */
+export async function getTodoById(id: string): Promise<ServiceResult<Todo>> {
+  logger.info({ id }, "Fetching todo by id");
+  const result = await findTodoById(id);
+  if (result.isErr()) {
+    return err(mapRepositoryError(result.error));
+  }
+  return ok(result.value);
+}
 
-  /**
-   * 新しい Todo を作成する.
-   * @param input - 作成する Todo の入力データ.
-   * @returns 作成された Todo を含む ResultAsync.
-   */
-  create(input: CreateTodoInput): ResultAsync<Todo, TodoServiceError> {
-    logger.info({ input }, "Creating new todo");
-    return todoRepository.create(input).mapErr(mapRepositoryError);
-  },
+/**
+ * 新しい Todo を作成する.
+ */
+export async function createNewTodo(input: CreateTodoInput): Promise<ServiceResult<Todo>> {
+  logger.info({ input }, "Creating new todo");
+  const result = await createTodo(input);
+  if (result.isErr()) {
+    return err(mapRepositoryError(result.error));
+  }
+  return ok(result.value);
+}
 
-  /**
-   * 指定された ID の Todo を更新する.
-   * @param id - 更新する Todo の ID.
-   * @param input - 更新内容.
-   * @returns 更新された Todo を含む ResultAsync.
-   */
-  update(id: string, input: UpdateTodoInput): ResultAsync<Todo, TodoServiceError> {
-    logger.info({ id, input }, "Updating todo");
-    return todoRepository.update(id, input).mapErr(mapRepositoryError);
-  },
+/**
+ * 指定された ID の Todo を更新する.
+ */
+export async function updateTodoById(
+  id: string,
+  input: UpdateTodoInput
+): Promise<ServiceResult<Todo>> {
+  logger.info({ id, input }, "Updating todo");
+  const result = await updateTodo(id, input);
+  if (result.isErr()) {
+    return err(mapRepositoryError(result.error));
+  }
+  return ok(result.value);
+}
 
-  /**
-   * 指定された ID の Todo を削除する.
-   * @param id - 削除する Todo の ID.
-   * @returns 削除された Todo を含む ResultAsync.
-   */
-  delete(id: string): ResultAsync<Todo, TodoServiceError> {
-    logger.info({ id }, "Deleting todo");
-    return todoRepository.delete(id).mapErr(mapRepositoryError);
-  },
+/**
+ * 指定された ID の Todo を削除する.
+ */
+export async function deleteTodoById(id: string): Promise<ServiceResult<Todo>> {
+  logger.info({ id }, "Deleting todo");
+  const result = await deleteTodo(id);
+  if (result.isErr()) {
+    return err(mapRepositoryError(result.error));
+  }
+  return ok(result.value);
+}
 
-  /**
-   * Todo の完了状態を切り替える.
-   * @param id - 対象の Todo の ID.
-   * @returns 更新された Todo を含む ResultAsync.
-   */
-  toggleComplete(id: string): ResultAsync<Todo, TodoServiceError> {
-    logger.info({ id }, "Toggling todo completion");
-    return todoRepository
-      .findById(id)
-      .mapErr(mapRepositoryError)
-      .andThen((todo) =>
-        todoRepository
-          .update(id, { completed: !todo.completed })
-          .mapErr(mapRepositoryError)
-      );
-  },
-};
+/**
+ * Todo の完了状態を切り替える.
+ */
+export async function toggleTodoComplete(id: string): Promise<ServiceResult<Todo>> {
+  logger.info({ id }, "Toggling todo completion");
+
+  const findResult = await findTodoById(id);
+  if (findResult.isErr()) {
+    return err(mapRepositoryError(findResult.error));
+  }
+
+  const todo = findResult.value;
+  const updateResult = await updateTodo(id, { completed: !todo.completed });
+  if (updateResult.isErr()) {
+    return err(mapRepositoryError(updateResult.error));
+  }
+
+  return ok(updateResult.value);
+}

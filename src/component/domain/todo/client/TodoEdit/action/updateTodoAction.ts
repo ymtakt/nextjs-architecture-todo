@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { updateTodoInputSchema } from "@/model/data/todo/schema";
-import { todoService } from "@/model/logic/todo/TodoLogic";
+import { updateTodoById } from "@/model/logic/todo/TodoLogic";
 
 import type { ActionState } from "../../type";
 
@@ -35,7 +35,7 @@ export async function updateTodoAction(
   }
 
   // サービス層でビジネスロジックを実行.
-  const result = await todoService.update(id, parsed.data);
+  const result = await updateTodoById(id, parsed.data);
 
   if (result.isErr()) {
     return {

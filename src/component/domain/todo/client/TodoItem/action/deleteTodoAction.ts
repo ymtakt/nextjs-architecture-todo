@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { todoService } from "@/model/logic/todo/TodoLogic";
+import { deleteTodoById } from "@/model/logic/todo/TodoLogic";
 
 import type { ActionState } from "../../type";
 
@@ -12,7 +12,7 @@ import type { ActionState } from "../../type";
  * @returns アクションの結果.
  */
 export async function deleteTodoAction(id: string): Promise<ActionState> {
-  const result = await todoService.delete(id);
+  const result = await deleteTodoById(id);
 
   if (result.isErr()) {
     return {

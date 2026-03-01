@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createTodoInputSchema } from "@/model/data/todo/schema";
-import { todoService } from "@/model/logic/todo/TodoLogic";
+import { createNewTodo } from "@/model/logic/todo/TodoLogic";
 
 import type { ActionState } from "../../type";
 
@@ -32,7 +32,7 @@ export async function createTodoAction(
   }
 
   // サービス層でビジネスロジックを実行.
-  const result = await todoService.create(parsed.data);
+  const result = await createNewTodo(parsed.data);
 
   if (result.isErr()) {
     return {

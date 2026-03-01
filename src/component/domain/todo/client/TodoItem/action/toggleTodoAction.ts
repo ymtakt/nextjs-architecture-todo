@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { todoService } from "@/model/logic/todo/TodoLogic";
+import { toggleTodoComplete } from "@/model/logic/todo/TodoLogic";
 
 import type { ActionState } from "../../type";
 
@@ -12,7 +12,7 @@ import type { ActionState } from "../../type";
  * @returns アクションの結果.
  */
 export async function toggleTodoAction(id: string): Promise<ActionState> {
-  const result = await todoService.toggleComplete(id);
+  const result = await toggleTodoComplete(id);
 
   if (result.isErr()) {
     return {
