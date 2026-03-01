@@ -1,6 +1,6 @@
+import { SignOutButton } from "@/component/domain/auth/client/sign-out-button/SignOutButton";
 import { TodoCreateForm } from "@/component/domain/todo/client/todo-create-form/TodoCreateForm";
 import { TodoItem } from "@/component/domain/todo/client/todo-item/TodoItem";
-import { SignOutButton } from "@/component/domain/auth/client/sign-out-button/SignOutButton";
 import { requireAuth } from "@/model/logic/auth/authLogic";
 import { getAllTodos } from "@/model/logic/todo/todoLogic";
 

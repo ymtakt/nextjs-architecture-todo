@@ -24,7 +24,10 @@ export async function findAllTodos(userId: string): Promise<RepositoryResult<Tod
     });
     return ok(todos);
   } catch (e) {
-    return err({ type: "DATABASE_ERROR", message: e instanceof Error ? e.message : "Unknown error" });
+    return err({
+      type: "DATABASE_ERROR",
+      message: e instanceof Error ? e.message : "Unknown error",
+    });
   }
 }
 
@@ -43,14 +46,20 @@ export async function findTodoById(id: string, userId: string): Promise<Reposito
     }
     return ok(todo);
   } catch (e) {
-    return err({ type: "DATABASE_ERROR", message: e instanceof Error ? e.message : "Unknown error" });
+    return err({
+      type: "DATABASE_ERROR",
+      message: e instanceof Error ? e.message : "Unknown error",
+    });
   }
 }
 
 /**
  * 新しい Todo を作成する.
  */
-export async function createTodo(input: CreateTodoInput, userId: string): Promise<RepositoryResult<Todo>> {
+export async function createTodo(
+  input: CreateTodoInput,
+  userId: string,
+): Promise<RepositoryResult<Todo>> {
   try {
     const todo = await prisma.todo.create({
       data: {
@@ -61,7 +70,10 @@ export async function createTodo(input: CreateTodoInput, userId: string): Promis
     });
     return ok(todo);
   } catch (e) {
-    return err({ type: "DATABASE_ERROR", message: e instanceof Error ? e.message : "Unknown error" });
+    return err({
+      type: "DATABASE_ERROR",
+      message: e instanceof Error ? e.message : "Unknown error",
+    });
   }
 }
 
@@ -71,7 +83,7 @@ export async function createTodo(input: CreateTodoInput, userId: string): Promis
 export async function updateTodo(
   id: string,
   input: UpdateTodoInput,
-  userId: string
+  userId: string,
 ): Promise<RepositoryResult<Todo>> {
   try {
     // まず所有権を確認
@@ -86,7 +98,10 @@ export async function updateTodo(
     });
     return ok(todo);
   } catch (e) {
-    return err({ type: "DATABASE_ERROR", message: e instanceof Error ? e.message : "Unknown error" });
+    return err({
+      type: "DATABASE_ERROR",
+      message: e instanceof Error ? e.message : "Unknown error",
+    });
   }
 }
 
@@ -104,6 +119,9 @@ export async function deleteTodo(id: string, userId: string): Promise<Repository
     const todo = await prisma.todo.delete({ where: { id } });
     return ok(todo);
   } catch (e) {
-    return err({ type: "DATABASE_ERROR", message: e instanceof Error ? e.message : "Unknown error" });
+    return err({
+      type: "DATABASE_ERROR",
+      message: e instanceof Error ? e.message : "Unknown error",
+    });
   }
 }

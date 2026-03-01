@@ -1,9 +1,6 @@
 "use server";
 
-import {
-  createSessionCookie,
-  setSessionCookie,
-} from "@/model/logic/auth/authLogic";
+import { createSessionCookie, setSessionCookie } from "@/model/logic/auth/authLogic";
 import { getOrCreateUser } from "@/model/logic/user/userLogic";
 
 type ActionState = {
@@ -22,9 +19,7 @@ type SignUpActionInput = {
  * サインアップ後のセッション作成 Server Action.
  * Firebase Auth での登録はクライアントで行い、この Action でセッションを作成する.
  */
-export async function signUpAction(
-  input: SignUpActionInput
-): Promise<ActionState> {
+export async function signUpAction(input: SignUpActionInput): Promise<ActionState> {
   // セッション Cookie 作成
   const sessionCookieResult = await createSessionCookie(input.idToken);
   if (sessionCookieResult.isErr()) {

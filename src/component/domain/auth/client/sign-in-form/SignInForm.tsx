@@ -1,20 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInWithEmailAndPassword } from "firebase/auth";
-
-import { firebaseAuth } from "@/external/firebase/client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import {
+  type SignInFormInput,
+  signInInputSchema,
+} from "@/component/domain/auth/client/sign-in-form/action/schema";
+import { signInAction } from "@/component/domain/auth/client/sign-in-form/action/signInAction";
 import { FormMessage } from "@/component/shared/client/form-message/FormMessage";
 import { SubmitButton } from "@/component/shared/client/submit-button/SubmitButton";
 import { TextInput } from "@/component/shared/client/text-input/TextInput";
-import {
-  signInInputSchema,
-  type SignInFormInput,
-} from "@/component/domain/auth/client/sign-in-form/action/schema";
-import { signInAction } from "@/component/domain/auth/client/sign-in-form/action/signInAction";
+import { firebaseAuth } from "@/external/firebase/client";
 
 /**
  * サインインフォームコンポーネント.
@@ -39,7 +38,7 @@ export function SignInForm() {
       const userCredential = await signInWithEmailAndPassword(
         firebaseAuth,
         data.email,
-        data.password
+        data.password,
       );
 
       // ID トークン取得

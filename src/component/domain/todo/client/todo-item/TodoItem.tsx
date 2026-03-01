@@ -2,11 +2,9 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
-
-import type { Todo } from "@/model/data/todo/type";
-
 import { deleteTodoAction } from "@/component/domain/todo/client/todo-item/action/deleteTodoAction";
 import { toggleTodoAction } from "@/component/domain/todo/client/todo-item/action/toggleTodoAction";
+import type { Todo } from "@/model/data/todo/type";
 
 /**
  * TodoItem コンポーネントの Props.
@@ -52,13 +50,15 @@ export function TodoItem({ todo }: TodoItemProps) {
         />
         <Link
           href={`/todo/${todo.id}`}
-          className={`text-gray-900 hover:text-blue-600 ${todo.completed ? "line-through text-gray-400" : ""
-            }`}
+          className={`text-gray-900 hover:text-blue-600 ${
+            todo.completed ? "line-through text-gray-400" : ""
+          }`}
         >
           {todo.title}
         </Link>
       </div>
       <button
+        type="button"
         onClick={handleDelete}
         disabled={isPending}
         className="text-sm text-red-600 hover:text-red-800 disabled:text-red-300"

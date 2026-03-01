@@ -1,9 +1,8 @@
 "use client";
 
 import { signOut } from "firebase/auth";
-
-import { firebaseAuth } from "@/external/firebase/client";
 import { signOutAction } from "@/component/domain/auth/client/sign-out-button/action/signOutAction";
+import { firebaseAuth } from "@/external/firebase/client";
 
 /**
  * サインアウトボタンコンポーネント.

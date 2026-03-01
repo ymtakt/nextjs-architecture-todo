@@ -11,12 +11,7 @@ type Props = {
  * 送信ボタンコンポーネント.
  * ローディング状態の表示に対応.
  */
-export function SubmitButton({
-  label,
-  loadingLabel,
-  isSubmitting,
-  fullWidth = false,
-}: Props) {
+export function SubmitButton({ label, loadingLabel, isSubmitting, fullWidth = false }: Props) {
   return (
     <button
       type="submit"

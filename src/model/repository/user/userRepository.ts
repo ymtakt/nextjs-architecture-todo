@@ -14,9 +14,7 @@ export type RepositoryError = {
 type RepositoryResult<T> = Result<T, RepositoryError>;
 
 /** Firebase UID でユーザーを検索する. */
-export async function findUserByFirebaseUid(
-  firebaseUid: string
-): Promise<RepositoryResult<User>> {
+export async function findUserByFirebaseUid(firebaseUid: string): Promise<RepositoryResult<User>> {
   try {
     const user = await prisma.user.findUnique({
       where: { firebaseUid },

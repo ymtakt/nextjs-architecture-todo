@@ -1,9 +1,8 @@
 "use server";
 
+import { err, ok, type Result } from "neverthrow";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-
-import { err, ok, type Result } from "neverthrow";
 
 import { firebaseAdminAuth } from "@/external/firebase/admin";
 import { logger } from "@/external/logger";
@@ -25,9 +24,7 @@ const SESSION_COOKIE_NAME = "session";
 const SESSION_EXPIRATION_MS = 60 * 60 * 24 * 5 * 1000;
 
 /** セッション Cookie を作成する. */
-export async function createSessionCookie(
-  idToken: string
-): Promise<AuthResult<string>> {
+export async function createSessionCookie(idToken: string): Promise<AuthResult<string>> {
   try {
     const sessionCookie = await firebaseAdminAuth.createSessionCookie(idToken, {
       expiresIn: SESSION_EXPIRATION_MS,
@@ -43,9 +40,7 @@ export async function createSessionCookie(
 }
 
 /** セッション Cookie を設定する. */
-export async function setSessionCookie(
-  sessionCookie: string
-): Promise<AuthResult<void>> {
+export async function setSessionCookie(sessionCookie: string): Promise<AuthResult<void>> {
   try {
     const cookieStore = await cookies();
     cookieStore.set(SESSION_COOKIE_NAME, sessionCookie, {
@@ -96,18 +91,12 @@ export async function getCurrentUser(): Promise<AuthResult<User | null>> {
     }
 
     // Firebase Admin で検証
-    const decodedClaims = await firebaseAdminAuth.verifySessionCookie(
-      sessionCookie,
-      true
-    );
+    const decodedClaims = await firebaseAdminAuth.verifySessionCookie(sessionCookie, true);
 
     // DB からユーザー取得
     const result = await getUserByFirebaseUid(decodedClaims.uid);
     if (result.isErr()) {
-      logger.warn(
-        { firebaseUid: decodedClaims.uid },
-        "User not found in database"
-      );
+      logger.warn({ firebaseUid: decodedClaims.uid }, "User not found in database");
       return err({
         type: "USER_NOT_FOUND",
         message: "User not found in database",

@@ -30,9 +30,7 @@ function toServiceError(e: RepositoryError): ServiceError {
 }
 
 /** Firebase UID でユーザーを取得する. */
-export async function getUserByFirebaseUid(
-  firebaseUid: string
-): Promise<ServiceResult<User>> {
+export async function getUserByFirebaseUid(firebaseUid: string): Promise<ServiceResult<User>> {
   logger.info({ firebaseUid }, "Fetching user by Firebase UID");
   const result = await findUserByFirebaseUid(firebaseUid);
   if (result.isErr()) {
@@ -42,9 +40,7 @@ export async function getUserByFirebaseUid(
 }
 
 /** ユーザーを取得、存在しなければ作成する. */
-export async function getOrCreateUser(
-  input: CreateUserInput
-): Promise<ServiceResult<User>> {
+export async function getOrCreateUser(input: CreateUserInput): Promise<ServiceResult<User>> {
   logger.info({ firebaseUid: input.firebaseUid }, "Get or create user");
 
   // まず既存ユーザーを検索

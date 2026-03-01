@@ -35,10 +35,7 @@ export async function TodoDetailPageTemplate({ id }: Props) {
   return (
     <div className="mx-auto max-w-2xl p-4">
       <div className="mb-6">
-        <Link
-          href="/todo"
-          className="text-blue-600 hover:text-blue-800 hover:underline"
-        >
+        <Link href="/todo" className="text-blue-600 hover:text-blue-800 hover:underline">
           &larr; 一覧に戻る
         </Link>
       </div>
@@ -54,15 +51,11 @@ export async function TodoDetailPageTemplate({ id }: Props) {
           </div>
           <div className="flex">
             <dt className="w-24 font-medium text-gray-500">作成日時:</dt>
-            <dd className="text-gray-900">
-              {todo.createdAt.toLocaleString("ja-JP")}
-            </dd>
+            <dd className="text-gray-900">{todo.createdAt.toLocaleString("ja-JP")}</dd>
           </div>
           <div className="flex">
             <dt className="w-24 font-medium text-gray-500">更新日時:</dt>
-            <dd className="text-gray-900">
-              {todo.updatedAt.toLocaleString("ja-JP")}
-            </dd>
+            <dd className="text-gray-900">{todo.updatedAt.toLocaleString("ja-JP")}</dd>
           </div>
         </dl>
       </div>

@@ -1,20 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-
-import { firebaseAuth } from "@/external/firebase/client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import {
+  type SignUpFormInput,
+  signUpInputSchema,
+} from "@/component/domain/auth/client/sign-up-form/action/schema";
+import { signUpAction } from "@/component/domain/auth/client/sign-up-form/action/signUpAction";
 import { FormMessage } from "@/component/shared/client/form-message/FormMessage";
 import { SubmitButton } from "@/component/shared/client/submit-button/SubmitButton";
 import { TextInput } from "@/component/shared/client/text-input/TextInput";
-import {
-  signUpInputSchema,
-  type SignUpFormInput,
-} from "@/component/domain/auth/client/sign-up-form/action/schema";
-import { signUpAction } from "@/component/domain/auth/client/sign-up-form/action/signUpAction";
+import { firebaseAuth } from "@/external/firebase/client";
 
 /**
  * サインアップフォームコンポーネント.
@@ -39,7 +38,7 @@ export function SignUpForm() {
       const userCredential = await createUserWithEmailAndPassword(
         firebaseAuth,
         data.email,
-        data.password
+        data.password,
       );
 
       // ID トークン取得

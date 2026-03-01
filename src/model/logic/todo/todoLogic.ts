@@ -9,8 +9,8 @@ import {
   deleteTodo,
   findAllTodos,
   findTodoById,
-  updateTodo,
   type RepositoryError,
+  updateTodo,
 } from "@/model/repository/todo/todoRepository";
 
 /** サービス層のエラー. */
@@ -56,7 +56,10 @@ export async function getTodoById(id: string, userId: string): Promise<ServiceRe
 /**
  * 新しい Todo を作成する.
  */
-export async function createNewTodo(input: CreateTodoInput, userId: string): Promise<ServiceResult<Todo>> {
+export async function createNewTodo(
+  input: CreateTodoInput,
+  userId: string,
+): Promise<ServiceResult<Todo>> {
   logger.info({ input, userId }, "Creating new todo");
   const result = await createTodo(input, userId);
   if (result.isErr()) {
@@ -71,7 +74,7 @@ export async function createNewTodo(input: CreateTodoInput, userId: string): Pro
 export async function updateTodoById(
   id: string,
   input: UpdateTodoInput,
-  userId: string
+  userId: string,
 ): Promise<ServiceResult<Todo>> {
   logger.info({ id, input, userId }, "Updating todo");
   const result = await updateTodo(id, input, userId);

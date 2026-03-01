@@ -1,9 +1,6 @@
 "use server";
 
-import {
-  createSessionCookie,
-  setSessionCookie,
-} from "@/model/logic/auth/authLogic";
+import { createSessionCookie, setSessionCookie } from "@/model/logic/auth/authLogic";
 import { getUserByFirebaseUid } from "@/model/logic/user/userLogic";
 
 type ActionState = {
@@ -20,9 +17,7 @@ type SignInActionInput = {
  * サインイン後のセッション作成 Server Action.
  * Firebase Auth でのログインはクライアントで行い、この Action でセッションを作成する.
  */
-export async function signInAction(
-  input: SignInActionInput
-): Promise<ActionState> {
+export async function signInAction(input: SignInActionInput): Promise<ActionState> {
   // ユーザーが DB に存在するか確認
   const userResult = await getUserByFirebaseUid(input.firebaseUid);
   if (userResult.isErr()) {

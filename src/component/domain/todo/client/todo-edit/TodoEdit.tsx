@@ -1,20 +1,18 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-import type { Todo } from "@/model/data/todo/type";
+import {
+  type UpdateTodoFormInput,
+  updateTodoInputSchema,
+} from "@/component/domain/todo/client/todo-edit/action/schema";
+import { updateTodoAction } from "@/component/domain/todo/client/todo-edit/action/updateTodoAction";
 import { Checkbox } from "@/component/shared/client/checkbox/Checkbox";
 import { FormMessage } from "@/component/shared/client/form-message/FormMessage";
 import { SubmitButton } from "@/component/shared/client/submit-button/SubmitButton";
 import { TextInput } from "@/component/shared/client/text-input/TextInput";
-
-import {
-  updateTodoInputSchema,
-  type UpdateTodoFormInput,
-} from "@/component/domain/todo/client/todo-edit/action/schema";
-import { updateTodoAction } from "@/component/domain/todo/client/todo-edit/action/updateTodoAction";
+import type { Todo } from "@/model/data/todo/type";
 
 /**
  * TodoEdit コンポーネントの Props.
@@ -72,11 +70,7 @@ export function TodoEdit({ todo }: Props) {
 
       {message && <FormMessage type={message.type} message={message.text} />}
 
-      <SubmitButton
-        label="更新"
-        loadingLabel="更新中..."
-        isSubmitting={isSubmitting}
-      />
+      <SubmitButton label="更新" loadingLabel="更新中..." isSubmitting={isSubmitting} />
     </form>
   );
 }

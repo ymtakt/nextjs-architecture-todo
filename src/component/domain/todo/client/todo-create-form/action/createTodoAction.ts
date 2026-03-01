@@ -1,10 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-
-import type { CreateTodoFormInput } from "./schema";
 import { requireAuth } from "@/model/logic/auth/authLogic";
 import { createNewTodo } from "@/model/logic/todo/todoLogic";
+import type { CreateTodoFormInput } from "./schema";
 
 type ActionState = {
   success: boolean;

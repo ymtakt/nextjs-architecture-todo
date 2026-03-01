@@ -9,9 +9,7 @@ const serviceAccount: ServiceAccount = {
 
 /** Firebase Admin App. */
 export const firebaseAdminApp =
-  getApps().length === 0
-    ? initializeApp({ credential: cert(serviceAccount) })
-    : getApps()[0];
+  getApps().length === 0 ? initializeApp({ credential: cert(serviceAccount) }) : getApps()[0];
 
 /** Firebase Admin Auth インスタンス. */
 export const firebaseAdminAuth = getAuth(firebaseAdminApp);

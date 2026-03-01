@@ -1,10 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-
-import type { UpdateTodoFormInput } from "./schema";
 import { requireAuth } from "@/model/logic/auth/authLogic";
 import { updateTodoById } from "@/model/logic/todo/todoLogic";
+import type { UpdateTodoFormInput } from "./schema";
 
 type ActionState = {
   success: boolean;
@@ -19,7 +18,7 @@ type ActionState = {
  */
 export async function updateTodoAction(
   id: string,
-  data: UpdateTodoFormInput
+  data: UpdateTodoFormInput,
 ): Promise<ActionState> {
   // 認証チェック
   const user = await requireAuth();
