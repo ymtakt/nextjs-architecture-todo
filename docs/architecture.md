@@ -299,7 +299,7 @@ model/logic/{domain}/
 
 ```typescript
 // model/repository/todo/todoRepository.ts
-import type { Todo as PrismaTodo } from "@/generated/prisma";
+import type { Todo as PrismaTodo } from "@prisma/generated";
 
 // Prisma の型をそのまま返す
 export async function findTodoWithUser(id: string): Promise<RepositoryResult<PrismaTodoWithUser>> {
@@ -313,7 +313,7 @@ export async function findTodoWithUser(id: string): Promise<RepositoryResult<Pri
 
 ```typescript
 // model/logic/todo/todoFactory.ts
-import type { Todo as PrismaTodo } from "@/generated/prisma";
+import type { Todo as PrismaTodo } from "@prisma/generated";
 import type { Todo } from "@/model/data/todo/type";
 
 type PrismaTodoWithUser = PrismaTodo & {
