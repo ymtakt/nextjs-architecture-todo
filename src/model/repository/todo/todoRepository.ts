@@ -13,10 +13,10 @@ export type TodoRepositoryErrorType = "NOT_FOUND" | "DATABASE_ERROR";
 /**
  * リポジトリ層のエラー.
  */
-export interface TodoRepositoryError {
+export type TodoRepositoryError = {
   type: TodoRepositoryErrorType;
   message: string;
-}
+};
 
 type RepoResult<T> = Result<T, TodoRepositoryError>;
 

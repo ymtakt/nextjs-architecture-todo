@@ -17,15 +17,15 @@ import {
 /**
  * サービス層で発生するエラーの種別.
  */
-export type TodoServiceErrorType = "NOT_FOUND" | "VALIDATION_ERROR" | "INTERNAL_ERROR";
+type TodoServiceErrorType = "NOT_FOUND" | "VALIDATION_ERROR" | "INTERNAL_ERROR";
 
 /**
  * サービス層のエラー.
  */
-export interface TodoServiceError {
+type TodoServiceError = {
   type: TodoServiceErrorType;
   message: string;
-}
+};
 
 type ServiceResult<T> = Result<T, TodoServiceError>;
 

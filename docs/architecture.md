@@ -49,6 +49,47 @@ src/
 └── external/
 ```
 
+## 型定義方針
+
+### type vs interface
+
+`type` で統一する。`interface` はライブラリの型を拡張する場合のみ使用する。
+
+```typescript
+// Good: type を使用
+type TodoItemProps = {
+  todo: Todo;
+};
+
+type TodoServiceError = {
+  type: TodoServiceErrorType;
+  message: string;
+};
+
+// Bad: interface を使用
+interface TodoItemProps {
+  todo: Todo;
+}
+```
+
+**理由:**
+- `type` の方が柔軟（union, intersection, mapped types が使える）。
+- `interface` が必要なのは declaration merging（ライブラリ型の拡張）のみ。
+- 統一することで迷いがなくなる。
+
+### export 方針
+
+必要な場合のみ `export` する。ファイル内で完結する型は非公開にする。
+
+```typescript
+// Good: 外部から参照される型のみ export
+export type Todo = z.infer<typeof todoSchema>;
+
+// Good: ファイル内でのみ使用する型は非公開
+type ServiceResult<T> = Result<T, TodoServiceError>;
+type TodoServiceErrorType = "NOT_FOUND" | "VALIDATION_ERROR" | "INTERNAL_ERROR";
+```
+
 ## ディレクトリ構造
 
 ```

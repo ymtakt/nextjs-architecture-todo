@@ -7,9 +7,9 @@ import { getTodoById } from "@/model/logic/todo/todoLogic";
 /**
  * TodoDetailPageTemplate コンポーネントの Props.
  */
-interface TodoDetailPageTemplateProps {
+type TodoDetailPageTemplateProps = {
   id: string;
-}
+};
 
 /**
  * Todo 詳細ページのテンプレートコンポーネント.

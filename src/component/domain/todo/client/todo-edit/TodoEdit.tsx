@@ -10,9 +10,9 @@ import type { ActionState } from "@/component/domain/todo/client/type";
 /**
  * TodoEdit コンポーネントの Props.
  */
-interface TodoEditProps {
+type TodoEditProps = {
   todo: Todo;
-}
+};
 
 /**
  * 初期状態.

@@ -3,11 +3,11 @@ import { TodoDetailPageTemplate } from "@/component/domain/todo/server/todo-deta
 /**
  * Todo 詳細ページの Props.
  */
-interface TodoDetailPageProps {
+type TodoDetailPageProps = {
   params: Promise<{
     id: string;
   }>;
-}
+};
 
 /**
  * Todo 詳細ページ.

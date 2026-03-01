@@ -11,9 +11,9 @@ import { toggleTodoAction } from "@/component/domain/todo/client/todo-item/actio
 /**
  * TodoItem コンポーネントの Props.
  */
-interface TodoItemProps {
+type TodoItemProps = {
   todo: Todo;
-}
+};
 
 /**
  * 個別の Todo アイテムを表示するクライアントコンポーネント.
