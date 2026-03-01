@@ -1,4 +1,21 @@
 npx lint-staged
 
-# Run tests (requires test database to be running)
+# Start test database
+echo "🐳 Starting test database..."
+docker compose up -d db-test
+
+# Wait for database to be ready
+echo "⏳ Waiting for database to be ready..."
+until docker compose exec -T db-test pg_isready -U postgres > /dev/null 2>&1; do
+  sleep 0.5
+done
+echo "✅ Database is ready"
+
+# Run tests (stop database on exit regardless of result)
+cleanup() {
+  echo "🐳 Stopping test database..."
+  docker compose stop db-test
+}
+trap cleanup EXIT
+
 npm run test
