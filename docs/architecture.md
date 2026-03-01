@@ -230,14 +230,14 @@ export type CreateTodoInput = {
 // model/repository/todo/todoRepository.ts
 import { err, ok, type Result } from "neverthrow";
 
-export async function findAllTodos(): Promise<Result<Todo[], TodoRepositoryError>> {
+export async function findAllTodos(): Promise<RepositoryResult<Todo[]>> {
   try {
     const todos = await prisma.todo.findMany({
       orderBy: { createdAt: "desc" },
     });
     return ok(todos);
-  } catch (error) {
-    return err(toDbError(error));
+  } catch (e) {
+    return err({ type: "DATABASE_ERROR", message: e instanceof Error ? e.message : "Unknown error" });
   }
 }
 ```
@@ -247,7 +247,7 @@ export async function findAllTodos(): Promise<Result<Todo[], TodoRepositoryError
 **責務**: ビジネスロジックの実行。
 
 - repository を使用してデータを取得・操作する。
-- ts-pattern でエラーマッピングを行う。
+- エラーをサービス層のエラーに変換する。
 - ログ出力などの横断的関心事を処理する。
 - 個別関数としてエクスポートする。
 
@@ -255,15 +255,104 @@ export async function findAllTodos(): Promise<Result<Todo[], TodoRepositoryError
 // model/logic/todo/todoLogic.ts
 import { findAllTodos } from "@/model/repository/todo/todoRepository";
 
-export async function getAllTodos(): Promise<Result<Todo[], TodoServiceError>> {
+export async function getAllTodos(): Promise<ServiceResult<Todo[]>> {
   logger.info("Fetching all todos");
   const result = await findAllTodos();
   if (result.isErr()) {
-    return err(mapRepositoryError(result.error));
+    return err(toServiceError(result.error));
   }
   return ok(result.value);
 }
 ```
+
+## モデル変換方針
+
+Repository から Logic へのデータ受け渡し時のモデル変換について。
+
+### 基本方針
+
+| Prisma 返却値 | 変換場所 | 説明 |
+|--------------|---------|------|
+| ドメインモデルと一致 | Repository | そのままドメインモデルとして返却 |
+| ドメインモデルと不一致 | Logic | Factory 関数で変換してから返却 |
+
+### ケース 1: Prisma 返却値 = ドメインモデル（現在の Todo）
+
+Repository でそのままドメインモデルを返す。
+
+```typescript
+// model/repository/todo/todoRepository.ts
+export async function findAllTodos(): Promise<RepositoryResult<Todo[]>> {
+  const todos = await prisma.todo.findMany({ ... });
+  return ok(todos);  // Prisma の型がそのまま Todo 型として返却可能
+}
+```
+
+### ケース 2: Prisma 返却値 ≠ ドメインモデル
+
+Logic 層で Factory を使って変換する。
+
+```
+model/logic/{domain}/
+├── {domain}Logic.ts
+└── {domain}Factory.ts   # 変換が必要な場合のみ作成
+```
+
+```typescript
+// model/repository/todo/todoRepository.ts
+import type { Todo as PrismaTodo } from "@/generated/prisma";
+
+// Prisma の型をそのまま返す
+export async function findTodoWithUser(id: string): Promise<RepositoryResult<PrismaTodoWithUser>> {
+  const todo = await prisma.todo.findUnique({
+    where: { id },
+    include: { user: true },
+  });
+  return ok(todo);
+}
+```
+
+```typescript
+// model/logic/todo/todoFactory.ts
+import type { Todo as PrismaTodo } from "@/generated/prisma";
+import type { Todo } from "@/model/data/todo/type";
+
+type PrismaTodoWithUser = PrismaTodo & {
+  user: { id: string; name: string };
+};
+
+/** Prisma 型からドメインモデルに変換する. */
+export function toTodo(prisma: PrismaTodoWithUser): Todo {
+  return {
+    id: prisma.id,
+    title: prisma.title,
+    completed: prisma.completed,
+    createdAt: prisma.createdAt,
+    updatedAt: prisma.updatedAt,
+    authorName: prisma.user.name,  // リレーションをフラット化
+  };
+}
+```
+
+```typescript
+// model/logic/todo/todoLogic.ts
+import { toTodo } from "./todoFactory";
+
+export async function getTodoWithUser(id: string): Promise<ServiceResult<Todo>> {
+  const result = await findTodoWithUser(id);
+  if (result.isErr()) {
+    return err(toServiceError(result.error));
+  }
+  return ok(toTodo(result.value));  // Factory で変換
+}
+```
+
+### この方針のメリット
+
+- **シンプルなケースは簡潔に**: 1:1 対応の場合は余計な変換コードが不要
+- **複雑なケースは明示的に**: Factory で変換ロジックを分離し可読性を確保
+- **Prisma 依存の局所化**: Repository 層に Prisma 型を閉じ込められる
+- **API 分離が容易**: Logic 層以上はドメインモデルのみを扱うため、将来の API 化に対応しやすい
 
 ### 6. external（外部サービス層）
 
