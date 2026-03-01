@@ -2,8 +2,8 @@
 
 import { useActionState, useRef } from "react";
 
-import type { ActionState } from "../type";
-import { createTodoAction } from "./action";
+import { createTodoAction } from "@/component/domain/todo/client/TodoCreateForm/action/createTodoAction";
+import type { ActionState } from "@/component/domain/todo/client/type";
 
 /**
  * 初期状態.

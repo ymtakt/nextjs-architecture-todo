@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { todoService } from "@/model/logic/todo";
-
-import { TodoEdit } from "../../client";
+import { TodoEdit } from "@/component/domain/todo/client/TodoEdit/TodoEdit";
+import { todoService } from "@/model/logic/todo/TodoLogic";
 
 /**
  * TodoDetailPageTemplate コンポーネントの Props.

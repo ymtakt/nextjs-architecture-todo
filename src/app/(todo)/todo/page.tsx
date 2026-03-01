@@ -1,4 +1,4 @@
-import { TodoPageTemplate } from "@/component/domain/todo";
+import { TodoPageTemplate } from "@/component/domain/todo/server/TodoPageTemplate/TodoPageTemplate";
 
 /**
  * Todo 一覧ページ.

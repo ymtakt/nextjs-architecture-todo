@@ -1,6 +1,6 @@
-import { todoService } from "@/model/logic/todo";
-
-import { TodoCreateForm, TodoItem } from "../../client";
+import { TodoCreateForm } from "@/component/domain/todo/client/TodoCreateForm/TodoCreateForm";
+import { TodoItem } from "@/component/domain/todo/client/TodoItem/TodoItem";
+import { todoService } from "@/model/logic/todo/TodoLogic";
 
 /**
  * Todo 一覧ページのテンプレートコンポーネント.

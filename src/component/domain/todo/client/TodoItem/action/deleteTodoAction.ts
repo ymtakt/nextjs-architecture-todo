@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { todoService } from "@/model/logic/todo";
+import { todoService } from "@/model/logic/todo/TodoLogic";
 
 import type { ActionState } from "../../type";
 

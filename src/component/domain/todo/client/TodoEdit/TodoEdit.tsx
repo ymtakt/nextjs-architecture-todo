@@ -2,10 +2,10 @@
 
 import { useActionState } from "react";
 
-import type { Todo } from "@/model/data/todo";
+import type { Todo } from "@/model/data/todo/type";
 
-import type { ActionState } from "../type";
-import { updateTodoAction } from "./action";
+import { updateTodoAction } from "@/component/domain/todo/client/TodoEdit/action/updateTodoAction";
+import type { ActionState } from "@/component/domain/todo/client/type";
 
 /**
  * TodoEdit コンポーネントの Props.

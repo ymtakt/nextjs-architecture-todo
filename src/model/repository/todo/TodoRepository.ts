@@ -1,7 +1,7 @@
 import { err, ok, ResultAsync } from "neverthrow";
 
-import { prisma } from "@/external";
-import type { CreateTodoInput, Todo, UpdateTodoInput } from "@/model/data/todo";
+import { prisma } from "@/external/prisma";
+import type { CreateTodoInput, Todo, UpdateTodoInput } from "@/model/data/todo/type";
 
 /**
  * リポジトリ層で発生するエラーの種別.

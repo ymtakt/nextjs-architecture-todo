@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useTransition } from "react";
 
-import type { Todo } from "@/model/data/todo";
+import type { Todo } from "@/model/data/todo/type";
 
-import { deleteTodoAction, toggleTodoAction } from "./action";
+import { deleteTodoAction } from "@/component/domain/todo/client/TodoItem/action/deleteTodoAction";
+import { toggleTodoAction } from "@/component/domain/todo/client/TodoItem/action/toggleTodoAction";
 
 /**
  * TodoItem コンポーネントの Props.

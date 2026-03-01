@@ -1,12 +1,12 @@
 import { ResultAsync } from "neverthrow";
 import { match } from "ts-pattern";
 
-import { logger } from "@/external";
-import type { CreateTodoInput, Todo, UpdateTodoInput } from "@/model/data/todo";
+import { logger } from "@/external/logger";
+import type { CreateTodoInput, Todo, UpdateTodoInput } from "@/model/data/todo/type";
 import {
   todoRepository,
   type TodoRepositoryError,
-} from "@/model/repository/todo";
+} from "@/model/repository/todo/TodoRepository";
 
 /**
  * サービス層で発生するエラーの種別.
