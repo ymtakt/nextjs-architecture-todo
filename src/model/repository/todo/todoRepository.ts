@@ -5,25 +5,16 @@ import { err, ok, type Result } from "neverthrow";
 import { prisma } from "@/external/prisma";
 import type { CreateTodoInput, Todo, UpdateTodoInput } from "@/model/data/todo/type";
 
-/**
- * リポジトリ層で発生するエラーの種別.
- */
-export type TodoRepositoryErrorType = "NOT_FOUND" | "DATABASE_ERROR";
-
-/**
- * リポジトリ層のエラー.
- */
-export type TodoRepositoryError = {
-  type: TodoRepositoryErrorType;
+/** リポジトリ層のエラー. */
+export type RepositoryError = {
+  type: "NOT_FOUND" | "DATABASE_ERROR";
   message: string;
 };
 
-type RepoResult<T> = Result<T, TodoRepositoryError>;
+type RepositoryResult<T> = Result<T, RepositoryError>;
 
-/**
- * エラーをリポジトリエラーに変換する.
- */
-function toDbError(error: unknown): TodoRepositoryError {
+/** エラーをリポジトリエラーに変換する. */
+function toDbError(error: unknown): RepositoryError {
   return {
     type: "DATABASE_ERROR",
     message: error instanceof Error ? error.message : "Unknown error",
@@ -33,7 +24,7 @@ function toDbError(error: unknown): TodoRepositoryError {
 /**
  * すべての Todo を取得する.
  */
-export async function findAllTodos(): Promise<RepoResult<Todo[]>> {
+export async function findAllTodos(): Promise<RepositoryResult<Todo[]>> {
   try {
     const todos = await prisma.todo.findMany({
       orderBy: { createdAt: "desc" },
@@ -47,7 +38,7 @@ export async function findAllTodos(): Promise<RepoResult<Todo[]>> {
 /**
  * 指定された ID の Todo を取得する.
  */
-export async function findTodoById(id: string): Promise<RepoResult<Todo>> {
+export async function findTodoById(id: string): Promise<RepositoryResult<Todo>> {
   try {
     const todo = await prisma.todo.findUnique({ where: { id } });
     if (!todo) {
@@ -65,7 +56,7 @@ export async function findTodoById(id: string): Promise<RepoResult<Todo>> {
 /**
  * 新しい Todo を作成する.
  */
-export async function createTodo(input: CreateTodoInput): Promise<RepoResult<Todo>> {
+export async function createTodo(input: CreateTodoInput): Promise<RepositoryResult<Todo>> {
   try {
     const todo = await prisma.todo.create({
       data: {
@@ -85,7 +76,7 @@ export async function createTodo(input: CreateTodoInput): Promise<RepoResult<Tod
 export async function updateTodo(
   id: string,
   input: UpdateTodoInput
-): Promise<RepoResult<Todo>> {
+): Promise<RepositoryResult<Todo>> {
   try {
     const todo = await prisma.todo.update({
       where: { id },
@@ -100,7 +91,7 @@ export async function updateTodo(
 /**
  * 指定された ID の Todo を削除する.
  */
-export async function deleteTodo(id: string): Promise<RepoResult<Todo>> {
+export async function deleteTodo(id: string): Promise<RepositoryResult<Todo>> {
   try {
     const todo = await prisma.todo.delete({ where: { id } });
     return ok(todo);

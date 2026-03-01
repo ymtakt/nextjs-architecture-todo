@@ -11,28 +11,19 @@ import {
   findAllTodos,
   findTodoById,
   updateTodo,
-  type TodoRepositoryError,
+  type RepositoryError,
 } from "@/model/repository/todo/todoRepository";
 
-/**
- * サービス層で発生するエラーの種別.
- */
-type TodoServiceErrorType = "NOT_FOUND" | "VALIDATION_ERROR" | "INTERNAL_ERROR";
-
-/**
- * サービス層のエラー.
- */
-type TodoServiceError = {
-  type: TodoServiceErrorType;
+/** サービス層のエラー. */
+type ServiceError = {
+  type: "NOT_FOUND" | "VALIDATION_ERROR" | "INTERNAL_ERROR";
   message: string;
 };
 
-type ServiceResult<T> = Result<T, TodoServiceError>;
+type ServiceResult<T> = Result<T, ServiceError>;
 
-/**
- * リポジトリエラーをサービスエラーに変換する.
- */
-function mapRepositoryError(error: TodoRepositoryError): TodoServiceError {
+/** リポジトリエラーをサービスエラーに変換する. */
+function mapRepositoryError(error: RepositoryError): ServiceError {
   return match(error.type)
     .with("NOT_FOUND", () => ({
       type: "NOT_FOUND" as const,
