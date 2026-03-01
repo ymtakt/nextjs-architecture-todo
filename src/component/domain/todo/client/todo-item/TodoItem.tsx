@@ -5,8 +5,8 @@ import { useTransition } from "react";
 
 import type { Todo } from "@/model/data/todo/type";
 
-import { deleteTodoAction } from "@/component/domain/todo/client/TodoItem/action/deleteTodoAction";
-import { toggleTodoAction } from "@/component/domain/todo/client/TodoItem/action/toggleTodoAction";
+import { deleteTodoAction } from "@/component/domain/todo/client/todo-item/action/deleteTodoAction";
+import { toggleTodoAction } from "@/component/domain/todo/client/todo-item/action/toggleTodoAction";
 
 /**
  * TodoItem コンポーネントの Props.

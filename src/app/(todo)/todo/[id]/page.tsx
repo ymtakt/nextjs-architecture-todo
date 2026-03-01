@@ -1,4 +1,4 @@
-import { TodoDetailPageTemplate } from "@/component/domain/todo/server/TodoDetailPageTemplate/TodoDetailPageTemplate";
+import { TodoDetailPageTemplate } from "@/component/domain/todo/server/todo-detail-page-template/TodoDetailPageTemplate";
 
 /**
  * Todo 詳細ページの Props.

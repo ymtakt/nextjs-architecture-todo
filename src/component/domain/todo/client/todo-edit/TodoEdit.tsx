@@ -4,7 +4,7 @@ import { useActionState } from "react";
 
 import type { Todo } from "@/model/data/todo/type";
 
-import { updateTodoAction } from "@/component/domain/todo/client/TodoEdit/action/updateTodoAction";
+import { updateTodoAction } from "@/component/domain/todo/client/todo-edit/action/updateTodoAction";
 import type { ActionState } from "@/component/domain/todo/client/type";
 
 /**

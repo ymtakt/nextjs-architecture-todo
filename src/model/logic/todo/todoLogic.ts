@@ -12,7 +12,7 @@ import {
   findTodoById,
   updateTodo,
   type TodoRepositoryError,
-} from "@/model/repository/todo/TodoRepository";
+} from "@/model/repository/todo/todoRepository";
 
 /**
  * サービス層で発生するエラーの種別.

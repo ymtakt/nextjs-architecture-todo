@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { toggleTodoComplete } from "@/model/logic/todo/TodoLogic";
+import { toggleTodoComplete } from "@/model/logic/todo/todoLogic";
 
 import type { ActionState } from "../../type";
 

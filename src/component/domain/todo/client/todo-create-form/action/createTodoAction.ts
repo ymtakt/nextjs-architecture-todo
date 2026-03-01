@@ -2,30 +2,27 @@
 
 import { revalidatePath } from "next/cache";
 
-import { updateTodoInputSchema } from "@/model/data/todo/schema";
-import { updateTodoById } from "@/model/logic/todo/TodoLogic";
+import { createTodoInputSchema } from "@/model/data/todo/schema";
+import { createNewTodo } from "@/model/logic/todo/todoLogic";
 
 import type { ActionState } from "../../type";
 
 /**
- * Todo を更新する Server Action.
- * @param id - 更新する Todo の ID.
+ * 新しい Todo を作成する Server Action.
  * @param _prevState - 前回の状態.
  * @param formData - フォームデータ.
  * @returns アクションの結果.
  */
-export async function updateTodoAction(
-  id: string,
+export async function createTodoAction(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
   const rawData = {
-    title: formData.get("title") || undefined,
-    completed: formData.get("completed") === "true",
+    title: formData.get("title"),
   };
 
   // バリデーション.
-  const parsed = updateTodoInputSchema.safeParse(rawData);
+  const parsed = createTodoInputSchema.safeParse(rawData);
   if (!parsed.success) {
     return {
       success: false,
@@ -35,7 +32,7 @@ export async function updateTodoAction(
   }
 
   // サービス層でビジネスロジックを実行.
-  const result = await updateTodoById(id, parsed.data);
+  const result = await createNewTodo(parsed.data);
 
   if (result.isErr()) {
     return {
@@ -45,9 +42,8 @@ export async function updateTodoAction(
   }
 
   revalidatePath("/todo");
-  revalidatePath(`/${id}`);
   return {
     success: true,
-    message: "Todo を更新した.",
+    message: "Todo を作成した.",
   };
 }

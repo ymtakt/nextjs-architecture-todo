@@ -9,6 +9,46 @@
 
 このプロジェクトでは、名前空間の概念として捉えているため、フォルダ名は単数形で統一している。
 
+## 命名規則
+
+### ファイル名
+
+| ケース | 対象 | 例 |
+|--------|------|-----|
+| ケバブケース | Next.js 規約ファイル | `page.tsx`, `layout.tsx`, `loading.tsx`, `not-found.tsx` |
+| アッパーキャメル | コンポーネント（.tsx） | `TodoItem.tsx`, `TodoCreateForm.tsx` |
+| ローワーキャメル | その他（hooks, utils, services, types） | `todoLogic.ts`, `todoRepository.ts`, `formatDate.ts` |
+
+### ディレクトリ名
+
+ケバブケースで統一する。
+
+```
+src/
+├── app/
+│   └── (todo)/
+│       └── todo/
+│           └── [id]/
+├── component/
+│   └── domain/
+│       └── todo/
+│           ├── client/
+│           │   ├── todo-create-form/
+│           │   ├── todo-edit/
+│           │   └── todo-item/
+│           └── server/
+│               ├── todo-page-template/
+│               └── todo-detail-page-template/
+├── model/
+│   ├── data/
+│   │   └── todo/
+│   ├── logic/
+│   │   └── todo/
+│   └── repository/
+│       └── todo/
+└── external/
+```
+
 ## ディレクトリ構造
 
 ```
@@ -39,32 +79,29 @@ src/
 │   └── domain/                # ドメイン固有コンポーネント
 │       └── {domain}/
 │           ├── client/        # クライアントコンポーネント
-│           │   ├── {Component}/
-│           │   │   ├── {Component}.tsx
-│           │   │   ├── index.ts
-│           │   │   └── action/  # Server Actions
-│           │   └── type.ts      # 共通型定義
+│           │   ├── {component}/           # ケバブケース
+│           │   │   ├── {Component}.tsx    # アッパーキャメル
+│           │   │   └── action/            # Server Actions
+│           │   └── type.ts                # 共通型定義
 │           ├── server/        # サーバーコンポーネント（テンプレート）
-│           │   └── {PageTemplate}/
+│           │   └── {page-template}/       # ケバブケース
 │           └── hook/          # ドメイン固有フック
 │
 ├── model/
 │   ├── data/                  # 型定義・スキーマ
 │   │   └── {domain}/
 │   │       ├── schema.ts      # Zod スキーマ
-│   │       ├── type.ts        # TypeScript 型定義
-│   │       └── index.ts
+│   │       └── type.ts        # TypeScript 型定義
 │   ├── repository/            # データアクセス層
 │   │   └── {domain}/
-│   │       └── {Domain}Repository.ts
+│   │       └── {domain}Repository.ts  # ローワーキャメル
 │   └── logic/                 # ビジネスロジック層
 │       └── {domain}/
-│           └── {Domain}Logic.ts
+│           └── {domain}Logic.ts       # ローワーキャメル
 │
 ├── external/                  # 外部サービス定義
 │   ├── prisma.ts              # Prisma クライアント
-│   ├── logger.ts              # pino ロガー
-│   └── index.ts
+│   └── logger.ts              # pino ロガー
 │
 ├── constant/                  # 定数定義
 └── util/                      # ユーティリティ
@@ -105,9 +142,11 @@ export default async function TodoDetailPage({ params }) {
 - エラーハンドリング（throw / notFound）を行う。
 
 ```tsx
-// component/domain/todo/server/TodoPageTemplate/TodoPageTemplate.tsx
+// component/domain/todo/server/todo-page-template/TodoPageTemplate.tsx
+import { getAllTodos } from "@/model/logic/todo/todoLogic";
+
 export async function TodoPageTemplate() {
-  const result = await todoService.getAll();
+  const result = await getAllTodos();
   if (result.isErr()) throw new Error(result.error.message);
   return <TodoList todos={result.value} />;
 }
@@ -142,19 +181,23 @@ export const todoSchema = z.object({
 **責務**: データの永続化・取得。
 
 - external の Prisma クライアントを使用する。
-- neverthrow の `ResultAsync` でエラーをラップする。
-- ドメインモデルを返す。
+- neverthrow の `Result` でエラーをラップする。
+- 個別関数としてエクスポートする。
 
 ```typescript
-// model/repository/todo/TodoRepository.ts
-export const todoRepository = {
-  findAll(): ResultAsync<Todo[], TodoRepositoryError> {
-    return ResultAsync.fromPromise(
-      prisma.todo.findMany({ orderBy: { createdAt: "desc" } }),
-      mapError
-    );
-  },
-};
+// model/repository/todo/todoRepository.ts
+import { err, ok, type Result } from "neverthrow";
+
+export async function findAllTodos(): Promise<Result<Todo[], TodoRepositoryError>> {
+  try {
+    const todos = await prisma.todo.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    return ok(todos);
+  } catch (error) {
+    return err(toDbError(error));
+  }
+}
 ```
 
 ### 5. model/logic（サービス層）
@@ -164,15 +207,20 @@ export const todoRepository = {
 - repository を使用してデータを取得・操作する。
 - ts-pattern でエラーマッピングを行う。
 - ログ出力などの横断的関心事を処理する。
+- 個別関数としてエクスポートする。
 
 ```typescript
-// model/logic/todo/TodoLogic.ts
-export const todoService = {
-  getAll(): ResultAsync<Todo[], TodoServiceError> {
-    logger.info("Fetching all todos");
-    return todoRepository.findAll().mapErr(mapRepositoryError);
-  },
-};
+// model/logic/todo/todoLogic.ts
+import { findAllTodos } from "@/model/repository/todo/todoRepository";
+
+export async function getAllTodos(): Promise<Result<Todo[], TodoServiceError>> {
+  logger.info("Fetching all todos");
+  const result = await findAllTodos();
+  if (result.isErr()) {
+    return err(mapRepositoryError(result.error));
+  }
+  return ok(result.value);
+}
 ```
 
 ### 6. external（外部サービス層）
@@ -237,20 +285,36 @@ Server Actions は対応するクライアントコンポーネントと同じ�
 
 ```
 component/domain/todo/client/
-├── TodoCreateForm/
+├── todo-create-form/
 │   ├── TodoCreateForm.tsx
-│   ├── index.ts
 │   └── action/
 │       └── createTodoAction.ts
-├── TodoEdit/
+├── todo-edit/
 │   ├── TodoEdit.tsx
-│   ├── index.ts
 │   └── action/
 │       └── updateTodoAction.ts
-└── TodoItem/
+└── todo-item/
     ├── TodoItem.tsx
-    ├── index.ts
     └── action/
         ├── toggleTodoAction.ts
         └── deleteTodoAction.ts
 ```
+
+## インポート方針
+
+バレルファイル（index.ts）は使用せず、直接ファイルパスでインポートする。
+
+```typescript
+// Good: 直接インポート
+import { TodoItem } from "@/component/domain/todo/client/todo-item/TodoItem";
+import { getAllTodos } from "@/model/logic/todo/todoLogic";
+
+// Bad: バレルファイル経由
+import { TodoItem } from "@/component/domain/todo/client/todo-item";
+import { todoService } from "@/model/logic/todo";
+```
+
+**理由:**
+- tree-shaking が効きやすい。
+- インポート元が明確になる。
+- Server/Client コンポーネントの境界が分かりやすい。
