@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
-import type { Todo } from "@/model/data/todo";
+import { todoService } from "@/model/logic/todo";
 
 import { TodoEdit } from "../../client";
 
@@ -8,14 +9,26 @@ import { TodoEdit } from "../../client";
  * TodoDetailPageTemplate コンポーネントの Props.
  */
 interface TodoDetailPageTemplateProps {
-  todo: Todo;
+  id: string;
 }
 
 /**
  * Todo 詳細ページのテンプレートコンポーネント.
- * Server Component として todo を受け取り、編集フォームを表示する.
+ * サーバーコンポーネントとして ID を受け取り、データを取得して編集フォームを表示する.
  */
-export function TodoDetailPageTemplate({ todo }: TodoDetailPageTemplateProps) {
+export async function TodoDetailPageTemplate({ id }: TodoDetailPageTemplateProps) {
+  const result = await todoService.getById(id);
+
+  // NOT_FOUND エラーの場合は 404 ページを表示.
+  if (result.isErr()) {
+    if (result.error.type === "NOT_FOUND") {
+      notFound();
+    }
+    throw new Error(result.error.message);
+  }
+
+  const todo = result.value;
+
   return (
     <div className="mx-auto max-w-2xl p-4">
       <div className="mb-6">

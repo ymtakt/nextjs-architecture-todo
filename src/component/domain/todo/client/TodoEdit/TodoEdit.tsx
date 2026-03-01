@@ -4,7 +4,8 @@ import { useActionState } from "react";
 
 import type { Todo } from "@/model/data/todo";
 
-import { type ActionState, updateTodoAction } from "../actions";
+import type { ActionState } from "../type";
+import { updateTodoAction } from "./action";
 
 /**
  * TodoEdit コンポーネントの Props.

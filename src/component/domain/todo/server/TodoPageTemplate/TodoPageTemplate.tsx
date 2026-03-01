@@ -1,19 +1,21 @@
-import type { Todo } from "@/model/data/todo";
+import { todoService } from "@/model/logic/todo";
 
 import { TodoCreateForm, TodoItem } from "../../client";
 
 /**
- * TodoPageTemplate コンポーネントの Props.
- */
-interface TodoPageTemplateProps {
-  todos: Todo[];
-}
-
-/**
  * Todo 一覧ページのテンプレートコンポーネント.
- * Server Component として todos を受け取り、クライアントコンポーネントに渡す.
+ * サーバーコンポーネントとしてデータを取得し、クライアントコンポーネントに渡す.
  */
-export function TodoPageTemplate({ todos }: TodoPageTemplateProps) {
+export async function TodoPageTemplate() {
+  const result = await todoService.getAll();
+
+  // エラーの場合は例外をスロー（error.tsx でハンドリング）.
+  if (result.isErr()) {
+    throw new Error(result.error.message);
+  }
+
+  const todos = result.value;
+
   return (
     <div className="mx-auto max-w-2xl p-4">
       <h1 className="mb-6 text-2xl font-bold text-gray-900">Todo リスト</h1>

@@ -2,7 +2,8 @@
 
 import { useActionState, useRef } from "react";
 
-import { type ActionState, createTodoAction } from "../actions";
+import type { ActionState } from "../type";
+import { createTodoAction } from "./action";
 
 /**
  * 初期状態.
