@@ -311,14 +311,33 @@ export async function getAllTodos(): Promise<Result<Todo[], TodoServiceError>> {
 neverthrow の Result 型を使用し、例外を投げずにエラーを値として扱う。
 
 ```typescript
-// Repository → Service のエラー変換
-function mapRepositoryError(error: RepositoryError): ServiceError {
-  return match(error.type)
-    .with("NOT_FOUND", () => ({ type: "NOT_FOUND", message: error.message }))
-    .with("DATABASE_ERROR", () => ({ type: "INTERNAL_ERROR", message: "データベースエラーが発生した." }))
-    .exhaustive();
+// Repository層のエラー
+type RepositoryError = {
+  type: "NOT_FOUND" | "DATABASE_ERROR";
+  message: string;
+};
+
+// Service層のエラー
+type ServiceError = {
+  type: "NOT_FOUND" | "INTERNAL_ERROR";
+  message: string;
+};
+
+// シンプルな変換
+function toServiceError(e: RepositoryError): ServiceError {
+  return {
+    type: e.type === "NOT_FOUND" ? "NOT_FOUND" : "INTERNAL_ERROR",
+    message: e.message,
+  };
 }
 ```
+
+**ページレンダリング時:**
+- NOT_FOUND → `notFound()` で 404 ページ
+- その他 → `throw` で error.tsx
+
+**Server Actions:**
+- ActionState で結果を返す（success/message）
 
 ## Server Actions の配置
 

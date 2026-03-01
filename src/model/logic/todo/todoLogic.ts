@@ -1,7 +1,6 @@
 "use server";
 
 import { err, ok, type Result } from "neverthrow";
-import { match } from "ts-pattern";
 
 import { logger } from "@/external/logger";
 import type { CreateTodoInput, Todo, UpdateTodoInput } from "@/model/data/todo/type";
@@ -16,24 +15,18 @@ import {
 
 /** サービス層のエラー. */
 type ServiceError = {
-  type: "NOT_FOUND" | "VALIDATION_ERROR" | "INTERNAL_ERROR";
+  type: "NOT_FOUND" | "INTERNAL_ERROR";
   message: string;
 };
 
 type ServiceResult<T> = Result<T, ServiceError>;
 
 /** リポジトリエラーをサービスエラーに変換する. */
-function mapRepositoryError(error: RepositoryError): ServiceError {
-  return match(error.type)
-    .with("NOT_FOUND", () => ({
-      type: "NOT_FOUND" as const,
-      message: error.message,
-    }))
-    .with("DATABASE_ERROR", () => ({
-      type: "INTERNAL_ERROR" as const,
-      message: "データベースエラーが発生した.",
-    }))
-    .exhaustive();
+function toServiceError(e: RepositoryError): ServiceError {
+  return {
+    type: e.type === "NOT_FOUND" ? "NOT_FOUND" : "INTERNAL_ERROR",
+    message: e.message,
+  };
 }
 
 /**
@@ -43,7 +36,7 @@ export async function getAllTodos(): Promise<ServiceResult<Todo[]>> {
   logger.info("Fetching all todos");
   const result = await findAllTodos();
   if (result.isErr()) {
-    return err(mapRepositoryError(result.error));
+    return err(toServiceError(result.error));
   }
   return ok(result.value);
 }
@@ -55,7 +48,7 @@ export async function getTodoById(id: string): Promise<ServiceResult<Todo>> {
   logger.info({ id }, "Fetching todo by id");
   const result = await findTodoById(id);
   if (result.isErr()) {
-    return err(mapRepositoryError(result.error));
+    return err(toServiceError(result.error));
   }
   return ok(result.value);
 }
@@ -67,7 +60,7 @@ export async function createNewTodo(input: CreateTodoInput): Promise<ServiceResu
   logger.info({ input }, "Creating new todo");
   const result = await createTodo(input);
   if (result.isErr()) {
-    return err(mapRepositoryError(result.error));
+    return err(toServiceError(result.error));
   }
   return ok(result.value);
 }
@@ -82,7 +75,7 @@ export async function updateTodoById(
   logger.info({ id, input }, "Updating todo");
   const result = await updateTodo(id, input);
   if (result.isErr()) {
-    return err(mapRepositoryError(result.error));
+    return err(toServiceError(result.error));
   }
   return ok(result.value);
 }
@@ -94,7 +87,7 @@ export async function deleteTodoById(id: string): Promise<ServiceResult<Todo>> {
   logger.info({ id }, "Deleting todo");
   const result = await deleteTodo(id);
   if (result.isErr()) {
-    return err(mapRepositoryError(result.error));
+    return err(toServiceError(result.error));
   }
   return ok(result.value);
 }
@@ -107,13 +100,13 @@ export async function toggleTodoComplete(id: string): Promise<ServiceResult<Todo
 
   const findResult = await findTodoById(id);
   if (findResult.isErr()) {
-    return err(mapRepositoryError(findResult.error));
+    return err(toServiceError(findResult.error));
   }
 
   const todo = findResult.value;
   const updateResult = await updateTodo(id, { completed: !todo.completed });
   if (updateResult.isErr()) {
-    return err(mapRepositoryError(updateResult.error));
+    return err(toServiceError(updateResult.error));
   }
 
   return ok(updateResult.value);

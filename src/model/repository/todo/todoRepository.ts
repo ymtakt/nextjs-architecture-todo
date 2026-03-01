@@ -13,14 +13,6 @@ export type RepositoryError = {
 
 type RepositoryResult<T> = Result<T, RepositoryError>;
 
-/** エラーをリポジトリエラーに変換する. */
-function toDbError(error: unknown): RepositoryError {
-  return {
-    type: "DATABASE_ERROR",
-    message: error instanceof Error ? error.message : "Unknown error",
-  };
-}
-
 /**
  * すべての Todo を取得する.
  */
@@ -30,8 +22,8 @@ export async function findAllTodos(): Promise<RepositoryResult<Todo[]>> {
       orderBy: { createdAt: "desc" },
     });
     return ok(todos);
-  } catch (error) {
-    return err(toDbError(error));
+  } catch (e) {
+    return err({ type: "DATABASE_ERROR", message: e instanceof Error ? e.message : "Unknown error" });
   }
 }
 
@@ -42,14 +34,11 @@ export async function findTodoById(id: string): Promise<RepositoryResult<Todo>> 
   try {
     const todo = await prisma.todo.findUnique({ where: { id } });
     if (!todo) {
-      return err({
-        type: "NOT_FOUND",
-        message: `Todo with id ${id} not found`,
-      });
+      return err({ type: "NOT_FOUND", message: `Todo with id ${id} not found` });
     }
     return ok(todo);
-  } catch (error) {
-    return err(toDbError(error));
+  } catch (e) {
+    return err({ type: "DATABASE_ERROR", message: e instanceof Error ? e.message : "Unknown error" });
   }
 }
 
@@ -65,8 +54,8 @@ export async function createTodo(input: CreateTodoInput): Promise<RepositoryResu
       },
     });
     return ok(todo);
-  } catch (error) {
-    return err(toDbError(error));
+  } catch (e) {
+    return err({ type: "DATABASE_ERROR", message: e instanceof Error ? e.message : "Unknown error" });
   }
 }
 
@@ -83,8 +72,8 @@ export async function updateTodo(
       data: input,
     });
     return ok(todo);
-  } catch (error) {
-    return err(toDbError(error));
+  } catch (e) {
+    return err({ type: "DATABASE_ERROR", message: e instanceof Error ? e.message : "Unknown error" });
   }
 }
 
@@ -95,7 +84,7 @@ export async function deleteTodo(id: string): Promise<RepositoryResult<Todo>> {
   try {
     const todo = await prisma.todo.delete({ where: { id } });
     return ok(todo);
-  } catch (error) {
-    return err(toDbError(error));
+  } catch (e) {
+    return err({ type: "DATABASE_ERROR", message: e instanceof Error ? e.message : "Unknown error" });
   }
 }
