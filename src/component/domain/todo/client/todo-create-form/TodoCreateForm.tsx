@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { SubmitButton } from "@/component/shared/client/submit-button/SubmitButton";
 import {
   createTodoInputSchema,
   type CreateTodoFormInput,
@@ -44,13 +45,11 @@ export function TodoCreateForm() {
           <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
         )}
       </div>
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400"
-      >
-        {isSubmitting ? "追加中..." : "追加"}
-      </button>
+      <SubmitButton
+        label="追加"
+        loadingLabel="追加中..."
+        isSubmitting={isSubmitting}
+      />
     </form>
   );
 }

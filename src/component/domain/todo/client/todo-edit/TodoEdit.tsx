@@ -5,6 +5,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { Todo } from "@/model/data/todo/type";
+import { Checkbox } from "@/component/shared/client/checkbox/Checkbox";
+import { FormMessage } from "@/component/shared/client/form-message/FormMessage";
+import { SubmitButton } from "@/component/shared/client/submit-button/SubmitButton";
+import { TextInput } from "@/component/shared/client/text-input/TextInput";
 
 import {
   updateTodoInputSchema,
@@ -24,7 +28,10 @@ type Props = {
  * React Hook Form を使用してバリデーションと送信を管理する.
  */
 export function TodoEdit({ todo }: Props) {
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const {
     register,
@@ -48,48 +55,28 @@ export function TodoEdit({ todo }: Props) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-          タイトル
-        </label>
-        <input
-          type="text"
-          id="title"
-          disabled={isSubmitting}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
-          {...register("title")}
-        />
-        {errors.title && (
-          <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
-        )}
-      </div>
-
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          id="completed"
-          disabled={isSubmitting}
-          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          {...register("completed")}
-        />
-        <label htmlFor="completed" className="ml-2 block text-sm text-gray-700">
-          完了
-        </label>
-      </div>
-
-      {message && (
-        <p className={`text-sm ${message.type === "success" ? "text-green-600" : "text-red-600"}`}>
-          {message.text}
-        </p>
-      )}
-
-      <button
-        type="submit"
+      <TextInput
+        id="title"
+        label="タイトル"
         disabled={isSubmitting}
-        className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400"
-      >
-        {isSubmitting ? "更新中..." : "更新"}
-      </button>
+        registration={register("title")}
+        error={errors.title}
+      />
+
+      <Checkbox
+        id="completed"
+        label="完了"
+        disabled={isSubmitting}
+        registration={register("completed")}
+      />
+
+      {message && <FormMessage type={message.type} message={message.text} />}
+
+      <SubmitButton
+        label="更新"
+        loadingLabel="更新中..."
+        isSubmitting={isSubmitting}
+      />
     </form>
   );
 }
